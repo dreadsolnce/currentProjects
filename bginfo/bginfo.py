@@ -13,15 +13,7 @@ class MainWindow(QMainWindow):
         self.show()
 
 
-def run_win():
-    init_win = QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(init_win)
-    init_win.show()
-
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    #  run_win()
     mw = MainWindow()
     sys.exit(app.exec_())
