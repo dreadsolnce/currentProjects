@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 import sys
-from resources.py import main
+from bginfo import Ui_MainWindow
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        ui_main = w_main.Ui_MainWindow()
+        ui_main = Ui_MainWindow()
         ui_main.setupUi(self)
         self.show()
 
 
 def run_win():
     init_win = QMainWindow()
-    ui = w_main.Ui_MainWindow()
+    ui = Ui_MainWindow()
     ui.setupUi(init_win)
     init_win.show()
 
