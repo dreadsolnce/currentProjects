@@ -10,8 +10,19 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ui_main = Ui_MainWindow()
         self.ui_main.setupUi(self)
-        self.ui_main.pushButton.setDisabled(True)
         self.show()
+        self.act_buttons()
+
+    def act_buttons(self):
+        print("Действия над кнопками")
+        self.ui_main.pushButton.clicked.connect(self.act_install)
+        self.ui_main.pushButton_2.clicked.connect(self.act_uninstall)
+
+    def act_install(self):
+        print("Нажата кнопка установить")
+
+    def act_uninstall(self):
+        print("Нажата кнопка удалить")
 
 
 if __name__ == "__main__":
