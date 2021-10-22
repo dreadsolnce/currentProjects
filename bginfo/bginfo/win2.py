@@ -9,12 +9,19 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QDesktopWidget
 
 
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(351, 157)
+
+        qr = Form.frameGeometry()
+        qp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(qp)
+        Form.move(qr.topLeft())
+
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.pushButton = QtWidgets.QPushButton(Form)

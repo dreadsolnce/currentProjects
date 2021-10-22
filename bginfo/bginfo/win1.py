@@ -9,12 +9,19 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QDesktopWidget
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(505, 100)
+
+        qr = MainWindow.frameGeometry()
+        qp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(qp)
+        MainWindow.move(qr.topLeft())
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
