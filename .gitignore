@@ -1,6 +1,4 @@
+bginfo/bginfo/__pycache__
 bginfo/.idea
-__pycache__/
 *.py[cod]
-docker-compose.yaml
-log/
-resources/products.json
+
