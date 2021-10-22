@@ -10,6 +10,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.ui_main = Ui_MainWindow()
         self.ui_main.setupUi(self)
+        self.ui_main.pushButton.setDisabled(True)
         self.show()
 
 
