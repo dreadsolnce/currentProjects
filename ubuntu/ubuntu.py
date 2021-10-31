@@ -52,16 +52,10 @@ class InstallProgram(object):
     def install(self):
         print("Установка программы {}".format(self.program))
         if self.program == "pycharm-community":
-            pass
+            action_program(command="sudo snap install pycharm-community --classic")
         if self.program == "qtdesigner":
-            proc = subprocess.Popen("sudo apt-get install python3-pyqt5 qtcreator "
-                                    "pyqt5-dev-tools qttools5-dev-tools -y",
-                                    shell=True,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            out, err = proc.communicate()
-            if out.decode("utf-8"): print(out.decode("utf-8"))
-            if err.decode('utf-8'): print(err.decode('utf-8'))
+            action_program(command="sudo apt-get install python3-pyqt5 qtcreator "
+                                   "pyqt5-dev-tools qttools5-dev-tools -y")
 
 
 class UninstallProgram(object):
@@ -73,16 +67,20 @@ class UninstallProgram(object):
     def uninstall(self):
         print("Удаление {}".format(self.program))
         if self.program == "pycharm-community":
-            pass
+            print("Не поддерживается удаление!")
         if self.program == "qtdesigner":
-            proc = subprocess.Popen("sudo apt-get remove qtcreator "
-                                    "pyqt5-dev-tools qttools5-dev-tools -y",
-                                    shell=True,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            out, err = proc.communicate()
-            if out.decode("utf-8"): print(out.decode("utf-8"))
-            if err.decode('utf-8'): print(err.decode('utf-8'))
+            action_program(command="sudo apt-get remove qtcreator "
+                                   "pyqt5-dev-tools qttools5-dev-tools -y")
+
+
+def action_program(command):
+    if command:
+        proc = subprocess.Popen(command, shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+        if out.decode("utf-8"): print(out.decode("utf-8"))
+        if err.decode('utf-8'): print(err.decode('utf-8'))
 
 
 def main():
