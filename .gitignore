@@ -1,4 +1,5 @@
 bginfo/bginfo/__pycache__
 bginfo/.idea
 *.py[cod]
-
+ubuntu/.idea
+.idea
