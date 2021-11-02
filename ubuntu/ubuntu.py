@@ -54,16 +54,18 @@ class InstallProgram(object):
 
     def install(self):
         print("Установка программы {}".format(self.program))
+        dir_app = "/usr/share/applications/"
         if self.program == "pycharm-community":
             self.command = "sudo snap install pycharm-community --classic"
         if self.program == "qtdesigner":
-            self.command = "sudo apt-get install python3-pyqt5 qtcreator pyqt5-dev-tools qttools5-dev-tools -y"
+            self.command = "sudo apt-get install python3-pyqt5 qtcreator pyqt5-dev-tools qttools5-dev-tools -y && " \
+                           "sudo rm -rf {}linguist-qt5.desktop {}assistant-qt5.desktop".format(dir_app, dir_app)
         if self.program == "timeshift":
             self.command = "sudo apt-get install timeshift -y"
         if self.program == "встроенные игры":
             self.command = "sudo apt install aisleriot gnome-mahjongg gnome-mines gnome-sudoku -y"
         if self.program == "mc":
-            self.command = "sudo apt-get install mc"
+            self.command = "sudo apt-get install mc -y && sudo rm -rf {}mcedit.desktop".format(dir_app)
         t = threading.Thread(target=action_program, name="install_timeshift",
                              args=(self.command,))
         t.start()
@@ -88,7 +90,7 @@ class UninstallProgram(object):
         if self.program == "встроенные игры":
             self.command = "sudo apt remove aisleriot gnome-mahjongg gnome-mines gnome-sudoku -y"
         if self.program == "mc":
-            self.command = "sudo apt-get remove mc"
+            self.command = "sudo apt-get remove mc -y"
         if self.command:
             t = threading.Thread(target=action_program, name="install_timeshift",
                                  args=(self.command,))
