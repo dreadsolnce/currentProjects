@@ -18,7 +18,7 @@ class MainWindow(QDialog):
         self.act_button()
 
     def list_program(self):
-        self.list = ["pycharm-community", "qtdesigner", "timeshift"]
+        self.list = ["pycharm-community", "qtdesigner", "timeshift", "встроенные игры", "mc"]
         for x in self.list:
             self.ui_main.comboBox.addItem(x)
 
@@ -60,6 +60,10 @@ class InstallProgram(object):
             self.command = "sudo apt-get install python3-pyqt5 qtcreator pyqt5-dev-tools qttools5-dev-tools -y"
         if self.program == "timeshift":
             self.command = "sudo apt-get install timeshift -y"
+        if self.program == "встроенные игры":
+            self.command = "sudo apt install aisleriot gnome-mahjongg gnome-mines gnome-sudoku -y"
+        if self.program == "mc":
+            self.command = "sudo apt-get install mc"
         t = threading.Thread(target=action_program, name="install_timeshift",
                              args=(self.command,))
         t.start()
@@ -81,6 +85,10 @@ class UninstallProgram(object):
             self.command = "sudo apt-get remove qtcreator pyqt5-dev-tools qttools5-dev-tools -y"
         if self.program == "timeshift":
             self.command = "sudo apt-get remove timeshift -y"
+        if self.program == "встроенные игры":
+            self.command = "sudo apt remove aisleriot gnome-mahjongg gnome-mines gnome-sudoku -y"
+        if self.program == "mc":
+            self.command = "sudo apt-get remove mc"
         if self.command:
             t = threading.Thread(target=action_program, name="install_timeshift",
                                  args=(self.command,))
