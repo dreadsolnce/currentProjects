@@ -93,30 +93,22 @@ class Action(QtWidgets.QDialog):
         else:
             self.error("Не найден конфигурационный файл!")
 
-        if not self.err:
-            dist_file = "/usr/local/bin/bginfo.bg"
-            try:
+        try:
+            if not self.err:
+                dist_file = "/usr/local/bin/bginfo.bg"
                 shutil.copyfile(self.src_file, dist_file)
                 os.chmod(dist_file, 0o777)
-            except PermissionError as e:
-                self.error(str(e).split("]")[1])
 
-        if not self.err:
-            src_file = self.path_script + "bginfo.desktop"
-            dist_file = "/etc/xdg/autostart/bginfo.desktop"
-            try:
+                src_file = self.path_script + "bginfo.desktop"
+                dist_file = "/etc/xdg/autostart/bginfo.desktop"
                 shutil.copyfile(src_file, dist_file)
-            except PermissionError as e:
-                self.error(str(e).split("]")[1])
-            except FileNotFoundError as e:
-                self.error(str(e).split("]")[1])
 
-        if self.err:
-            if os.path.isfile("/usr/local/bin/bginfo.bg"):
-                os.remove("/usr/local/bin/bginfo.bg")
-        elif not self.err:
-            self.window_center()
-            QMessageBox.information(self, "Выполнено!", "Установка выполнена успешно!")
+                self.window_center()
+                QMessageBox.information(self, "Выполнено!", "Установка выполнена успешно!")
+        except PermissionError as e:
+            self.error(str(e).split("]")[1])
+        except FileNotFoundError as e:
+            self.error(str(e).split("]")[1])
 
     def error(self, message):
         self.window_center()
