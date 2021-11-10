@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'bginfo/resources/ui/ui_get_user.ui'
+# Form implementation generated from reading ui file 'ui_get_user_new.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -9,37 +9,27 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QDesktopWidget
 
 
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(351, 157)
-
-        qr = Form.frameGeometry()
-        qp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(qp)
-        Form.move(qr.topLeft())
-
+        Form.resize(442, 155)
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.pushButton = QtWidgets.QPushButton(Form)
         self.pushButton.setObjectName("pushButton")
-        self.gridLayout.addWidget(self.pushButton, 1, 0, 1, 1)
-        self.formLayout = QtWidgets.QFormLayout()
-        self.formLayout.setObjectName("formLayout")
-        self.label = QtWidgets.QLabel(Form)
-        self.label.setTextFormat(QtCore.Qt.AutoText)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setObjectName("label")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.SpanningRole, self.label)
+        self.gridLayout.addWidget(self.pushButton, 2, 0, 1, 1)
         self.comboBox = QtWidgets.QComboBox(Form)
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.comboBox)
-        self.gridLayout.addLayout(self.formLayout, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.comboBox, 1, 0, 1, 1)
+        self.label = QtWidgets.QLabel(Form)
+        self.label.setTextFormat(QtCore.Qt.AutoText)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -48,7 +38,7 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Конфигурация"))
         self.pushButton.setText(_translate("Form", "Применить"))
-        self.label.setText(_translate("Form", "Выберите один из файлов конфигурации \n"
-" вывода информации на рабочий стол "))
         self.comboBox.setItemText(0, _translate("Form", "Богданов"))
         self.comboBox.setItemText(1, _translate("Form", "Колчин"))
+        self.label.setText(_translate("Form", "Выберите один из файлов конфигурации \n"
+" вывода информации на рабочий стол "))
