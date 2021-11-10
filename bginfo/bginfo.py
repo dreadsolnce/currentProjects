@@ -82,6 +82,7 @@ class Action(QtWidgets.QDialog):
             self.install()
         elif self.action == "uninstall":
             print("Выполняем удаление программы")
+            self.uninstall()
 
     def install(self):
         if self.config == "Богданов" and os.path.isfile(self.path_config + "bginfo.bpb.bg"):
@@ -98,6 +99,7 @@ class Action(QtWidgets.QDialog):
                 dist_file = "/usr/local/bin/bginfo.bg"
                 shutil.copyfile(self.src_file, dist_file)
                 os.chmod(dist_file, 0o777)
+                os.system(dist_file + "&")
 
                 src_file = self.path_script + "bginfo.desktop"
                 dist_file = "/etc/xdg/autostart/bginfo.desktop"
@@ -105,9 +107,23 @@ class Action(QtWidgets.QDialog):
 
                 self.window_center()
                 QMessageBox.information(self, "Выполнено!", "Установка выполнена успешно!")
+
         except PermissionError as e:
             self.error(str(e).split("]")[1])
         except FileNotFoundError as e:
+            self.error(str(e).split("]")[1])
+
+    def uninstall(self):
+        try:
+            file_1, file_2 = "/usr/local/bin/bginfo.bg", "/etc/xdg/autostart/bginfo.desktop"
+            if os.path.isfile(file_1):
+                os.remove(file_1)
+                os.system("pkill root-tail")
+            if os.path.isfile(file_2):
+                os.remove(file_2)
+            self.window_center()
+            QMessageBox.information(self, "Выполнено!", "Удаление выполнено успешно!")
+        except PermissionError as e:
             self.error(str(e).split("]")[1])
 
     def error(self, message):
