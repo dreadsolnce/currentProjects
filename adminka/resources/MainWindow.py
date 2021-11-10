@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'qt/MainWindow.ui'
+# Form implementation generated from reading ui file 'MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(862, 637)
+        MainWindow.resize(627, 293)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -29,12 +29,16 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.treeWidget, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 862, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 627, 24))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
         self.menu_2 = QtWidgets.QMenu(self.menu)
         self.menu_2.setObjectName("menu_2")
+        self.menu_3 = QtWidgets.QMenu(self.menubar)
+        self.menu_3.setObjectName("menu_3")
+        self.menu_4 = QtWidgets.QMenu(self.menubar)
+        self.menu_4.setObjectName("menu_4")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -43,11 +47,16 @@ class Ui_MainWindow(object):
         self.actionUbuntu_21_10.setObjectName("actionUbuntu_21_10")
         self.action_Exit = QtWidgets.QAction(MainWindow)
         self.action_Exit.setObjectName("action_Exit")
+        self.actionAstra_Linux_1_6 = QtWidgets.QAction(MainWindow)
+        self.actionAstra_Linux_1_6.setObjectName("actionAstra_Linux_1_6")
         self.menu_2.addAction(self.actionUbuntu_21_10)
+        self.menu_2.addAction(self.actionAstra_Linux_1_6)
         self.menu.addAction(self.menu_2.menuAction())
         self.menu.addSeparator()
         self.menu.addAction(self.action_Exit)
         self.menubar.addAction(self.menu.menuAction())
+        self.menubar.addAction(self.menu_3.menuAction())
+        self.menubar.addAction(self.menu_4.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -61,14 +70,15 @@ class Ui_MainWindow(object):
         self.treeWidget.headerItem().setText(2, _translate("MainWindow", "Состояние"))
         __sortingEnabled = self.treeWidget.isSortingEnabled()
         self.treeWidget.setSortingEnabled(False)
-        self.treeWidget.topLevelItem(0).setText(0, _translate("MainWindow", "[]"))
         self.treeWidget.topLevelItem(0).setText(1, _translate("MainWindow", "PyCharm"))
         self.treeWidget.topLevelItem(0).setText(2, _translate("MainWindow", "Не установлено"))
-        self.treeWidget.topLevelItem(1).setText(0, _translate("MainWindow", "[]"))
         self.treeWidget.topLevelItem(1).setText(1, _translate("MainWindow", "Image For Linux"))
         self.treeWidget.topLevelItem(1).setText(2, _translate("MainWindow", "Установлено"))
         self.treeWidget.setSortingEnabled(__sortingEnabled)
-        self.menu.setTitle(_translate("MainWindow", "Программы"))
+        self.menu.setTitle(_translate("MainWindow", "Локальная настрйка"))
         self.menu_2.setTitle(_translate("MainWindow", "Установка программ"))
+        self.menu_3.setTitle(_translate("MainWindow", "Удалённая настройка"))
+        self.menu_4.setTitle(_translate("MainWindow", "Сканер сети"))
         self.actionUbuntu_21_10.setText(_translate("MainWindow", "Ubuntu 21.10"))
         self.action_Exit.setText(_translate("MainWindow", "Выход"))
+        self.actionAstra_Linux_1_6.setText(_translate("MainWindow", "Astra Linux 1.6"))
