@@ -3,8 +3,8 @@
 
 import os
 import sys
-import resources
-from modules import OsVersion, Prog
+from modules import OsVersion, Prog, ListProgram
+from resources import Ui_MainWindow
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.Qt import Qt
@@ -23,11 +23,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.sp = None  # Объект списка программ
+        self.os_ver = None  # Объект версии ОС
         print("Инициализация основного окна программы")
-        self.gui = resources.Ui_MainWindow()
+        self.gui = Ui_MainWindow()
         self.gui.setupUi(self)
         # Задание параметров основного окна
         self.gui.checkBox.setVisible(False)
+        self.gui.pushButtonInstall.setVisible(False)
+        self.gui.pushButtonRemove.setVisible(False)
         # Создание иконки программы
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(logo), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -44,6 +47,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gui.InstallRemove.setStatusTip("Установка и удаление программ")
         self.gui.treeWidget.setStatusTip("Список программ для установки и удаления")
         self.gui.checkBox.setStatusTip("Выделить всё")
+        self.gui.pushButtonInstall.setStatusTip("Установка отмеченных программ")
+        self.gui.pushButtonRemove.setStatusTip("Удаление отмеченных программ")
         self.gui.action_Exit.setStatusTip("Выход из программы")
         # Центрирование окна
         self.winCenter()
@@ -53,16 +58,20 @@ class MainWindow(QtWidgets.QMainWindow):
     def action(self):
         self.gui.InstallRemove.triggered.connect(self.clkInstallRemove)
         self.gui.checkBox.clicked.connect(self.clkCheckbox)
+        self.gui.pushButtonInstall.clicked.connect(lambda: self.clkPushButtonInstall(action="install"))
+        self.gui.pushButtonRemove.clicked.connect(lambda: self.clkPushButtonInstall(action="remove"))
         self.gui.action_Exit.triggered.connect(lambda: sys.exit())
 
     def clkInstallRemove(self):
         print("Нажата кнопка Установка/Удаление")
         self.gui.treeWidget.setVisible(True)
         self.gui.checkBox.setVisible(True)
+        self.gui.pushButtonInstall.setVisible(True)
+        self.gui.pushButtonRemove.setVisible(True)
         # Список программ
-        os_ver = OsVersion()
-        print("Версия ОС: {}".format(os_ver))
-        self.sp = Prog(os_ver)
+        self.os_ver = OsVersion()
+        print("Версия ОС: {}".format(self.os_ver))
+        self.sp = Prog(self.os_ver)
         print("Доступный список программ для установки: {}".format(self.sp.cortege_program))
         self.fillingProgramList()
 
@@ -97,6 +106,22 @@ class MainWindow(QtWidgets.QMainWindow):
                 current_element.setCheckState(0, Qt.Checked)
             elif not state:
                 current_element.setCheckState(0, Qt.Unchecked)
+
+    def clkPushButtonInstall(self, action=None):
+        text = None
+        if action == "install":
+            print("Нажата кнопка установить")
+            text = "Устанавливаем программу: {}"
+        elif action == "remove":
+            print("Нажата кнопка удалить")
+            text = "Удаляем программу: {}"
+        count_row = self.gui.treeWidget.topLevelItemCount()
+        for count in range(count_row):
+            current_element = self.gui.treeWidget.topLevelItem(count)
+            if current_element.checkState(0):
+                name_prog = current_element.text(1)
+                print(text.format(name_prog))
+                ListProgram.installProg(action, name_prog)
 
     # Центрирование окна относительно экрана
     def winCenter(self):
