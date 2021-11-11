@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 import resources
 from modules import OsVersion, Prog
@@ -14,6 +15,9 @@ from PyQt5.QtWidgets import QDesktopWidget
     ОС семейства Linux (Ubuntu, AstraLinux)
 """
 
+logo = os.path.join(sys.path[0] + "/resources/ico/", "logo.svg")
+print("Иконка программы: {}".format(logo))
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -22,12 +26,22 @@ class MainWindow(QtWidgets.QMainWindow):
         print("Инициализация основного окна программы")
         self.gui = resources.Ui_MainWindow()
         self.gui.setupUi(self)
+        # Создание иконки программы
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(logo), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setWindowIcon(icon)
         # Задание параметров treeWidget
         self.gui.treeWidget.setVisible(False)
         self.gui.treeWidget.setFocusPolicy(Qt.NoFocus)
         self.gui.treeWidget.setIndentation(2)
         self.gui.treeWidget.setColumnWidth(0, 60)
         self.gui.treeWidget.setColumnWidth(1, 250)
+        # Изменение статубара
+        self.gui.statusbar.showMessage("Основное окно программы")
+        self.gui.centralwidget.setStatusTip("Основное окно программы")
+        self.gui.InstallRemove.setStatusTip("Установка и удаление программ")
+        self.gui.treeWidget.setStatusTip("Список программ для установки и удаления")
+        self.gui.action_Exit.setStatusTip("Выход из программы")
         # Центрирование окна
         self.winCenter()
         self.show()
