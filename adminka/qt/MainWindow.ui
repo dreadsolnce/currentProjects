@@ -84,16 +84,15 @@
    </property>
    <widget class="QMenu" name="menu">
     <property name="title">
-     <string>Локальная настрйка</string>
+     <string>Локальная настройка</string>
     </property>
-    <widget class="QMenu" name="menu_2">
+    <widget class="QMenu" name="program">
      <property name="title">
-      <string>Установка программ</string>
+      <string>Программы</string>
      </property>
-     <addaction name="actionUbuntu_21_10"/>
-     <addaction name="actionAstra_Linux_1_6"/>
+     <addaction name="InstallRemove"/>
     </widget>
-    <addaction name="menu_2"/>
+    <addaction name="program"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -112,9 +111,9 @@
    <addaction name="menu_4"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionUbuntu_21_10">
+  <action name="InstallRemove">
    <property name="text">
-    <string>Ubuntu 21.10</string>
+    <string>Установка/Удаление</string>
    </property>
   </action>
   <action name="action_Exit">
@@ -122,9 +121,9 @@
     <string>Выход</string>
    </property>
   </action>
-  <action name="actionAstra_Linux_1_6">
+  <action name="removeProgram">
    <property name="text">
-    <string>Astra Linux 1.6</string>
+    <string>Удалить</string>
    </property>
   </action>
  </widget>
