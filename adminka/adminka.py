@@ -26,6 +26,8 @@ class MainWindow(QtWidgets.QMainWindow):
         print("Инициализация основного окна программы")
         self.gui = resources.Ui_MainWindow()
         self.gui.setupUi(self)
+        # Задание параметров основного окна
+        self.gui.checkBox.setVisible(False)
         # Создание иконки программы
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(logo), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -41,6 +43,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gui.centralwidget.setStatusTip("Основное окно программы")
         self.gui.InstallRemove.setStatusTip("Установка и удаление программ")
         self.gui.treeWidget.setStatusTip("Список программ для установки и удаления")
+        self.gui.checkBox.setStatusTip("Выделить всё")
         self.gui.action_Exit.setStatusTip("Выход из программы")
         # Центрирование окна
         self.winCenter()
@@ -49,11 +52,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def action(self):
         self.gui.InstallRemove.triggered.connect(self.clkInstallRemove)
+        self.gui.checkBox.clicked.connect(self.clkCheckbox)
         self.gui.action_Exit.triggered.connect(lambda: sys.exit())
 
     def clkInstallRemove(self):
         print("Нажата кнопка Установка/Удаление")
         self.gui.treeWidget.setVisible(True)
+        self.gui.checkBox.setVisible(True)
         # Список программ
         os_ver = OsVersion()
         print("Версия ОС: {}".format(os_ver))
@@ -73,6 +78,25 @@ class MainWindow(QtWidgets.QMainWindow):
             elif self.sp.dict_program[name_prog] == 1:
                 child.setForeground(2, QtGui.QBrush(Qt.darkRed))
                 child.setText(2, "Отсутствует")
+
+    def clkCheckbox(self):
+        print("Нажат чекбокс")
+        if self.gui.checkBox.isChecked():
+            self.allCheck(state=True)
+            print("Выделяем все чекбоксы")
+        elif not self.gui.checkBox.isChecked():
+            self.allCheck(state=False)
+            print("Снимаем выделение со всех чекбоксов")
+
+    def allCheck(self, state):
+        count_row = self.gui.treeWidget.topLevelItemCount()
+        print("Колличество строк в таблице: {}".format(count_row))
+        for count in range(count_row):
+            current_element = self.gui.treeWidget.topLevelItem(count)
+            if state:
+                current_element.setCheckState(0, Qt.Checked)
+            elif not state:
+                current_element.setCheckState(0, Qt.Unchecked)
 
     # Центрирование окна относительно экрана
     def winCenter(self):
