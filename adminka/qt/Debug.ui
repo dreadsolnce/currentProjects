@@ -16,6 +16,9 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <widget class="QTextBrowser" name="textDebug">
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAsNeeded</enum>
+     </property>
      <property name="html">
       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -27,6 +30,9 @@ p, li { white-space: pre-wrap; }
    </item>
    <item row="1" column="0">
     <widget class="QProgressBar" name="progressBar">
+     <property name="maximum">
+      <number>100</number>
+     </property>
      <property name="value">
       <number>0</number>
      </property>
