@@ -14,7 +14,6 @@ class ListProgramForInstall(object):
             list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "isomaster"]
         elif self.os_version == "AstraLinuxSE 1.6":
             list_program = ["timeshift"]
-        #  self.stateProgram()
         return list_program
 
     # Статус программы: установлена или нет
@@ -24,6 +23,8 @@ class ListProgramForInstall(object):
         for name_prog in list_program:
             if name_prog == "игры":
                 command = "dpkg --list | grep gnome-sudoku | awk '{print $2}' | grep -E '^gnome-sudoku$'>/dev/null; echo $?"
+            elif name_prog == "pycharm-community":
+                command = "sudo snap list pycharm-community >/dev/null; echo $?"
             else:
                 command = "dpkg --list | grep " + name_prog + " | awk '{print $2}' | grep -E '^" + name_prog + "$'>/dev/null; echo $?"
             state_prog = action_program_return_code(command)

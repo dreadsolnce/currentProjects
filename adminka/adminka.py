@@ -65,10 +65,10 @@ class MainWindow(QtWidgets.QMainWindow):
         print("Нажата кнопка Установка/Удаление")
         self.enableWidget()
         # Версия ОС
-        os_version = OsVersion()
-        print("Версия ОС: {}".format(os_version))
+        self.os_version = OsVersion()
+        print("Версия ОС: {}".format(self.os_version))
         # Список программ
-        self.l1 = ListProgramForInstall(os_version)
+        self.l1 = ListProgramForInstall(self.os_version)
         s = self.l1.listProgram()
         print("Доступный список программ для установки: {}".format(s))
         self.fillingProgramList(s)
@@ -122,7 +122,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 name_prog = current_element.text(1)
                 name_prog_list.append(name_prog)
                 print(text.format(name_prog))
-        ins = InstallProg()
+        ins = InstallProg(self.os_version)
         ins.installProg(action, name_prog_list)
         self.clkInstallRemove()  # Обновляем список состояния программ
 

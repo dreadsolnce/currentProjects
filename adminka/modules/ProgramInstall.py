@@ -7,40 +7,50 @@ from .Debug import Ui_Form
 from time import sleep
 
 
-class InstallProg(QtWidgets.QDialog):
-    def __init__(self):
+class InstallProg(QtWidgets.QDialog, Ui_Form):
+    def __init__(self, os_ver):
         super().__init__()
-        self.d = Ui_Form()
-        self.d.setupUi(self)
+        self.os_ver = os_ver
+        self.setupUi(self)
 
     def installProg(self, action=None, name_program_list=None):
         self.show()
         command = None
 
         for name_program in name_program_list:
-            if name_program == "игры":
-                name_program = "aisleriot gnome-mahjongg gnome-mines gnome-sudoku"
-            elif name_program == "pyqt5-dev-tools":
-                name_program = "python3-pyqt5 qtcreator pyqt5-dev-tools qttools5-dev-tools"
+            if self.os_ver == "Ubuntu 21.04":
+                if name_program == "игры":
+                    name_program = "aisleriot gnome-mahjongg gnome-mines gnome-sudoku"
+                elif name_program == "pyqt5-dev-tools":
+                    name_program = "python3-pyqt5 qtcreator pyqt5-dev-tools qttools5-dev-tools"
 
-            if action == "install":
-                command = "sudo apt-get install {} -y".format(name_program)
-            elif action == "remove":
-                if name_program == "pyqt5-dev-tools":
-                    name_program = "qtcreator pyqt5-dev-tools qttools5-dev-tools"
-                command = "sudo apt-get purge {} -y".format(name_program)
+                if action == "install":
+                    if name_program == "pycharm-community":
+                        command = "sudo snap install pycharm-community --classic"
+                    else:
+                        command = "sudo apt-get install {} -y".format(name_program)
+                elif action == "remove":
+                    if name_program == "pyqt5-dev-tools":
+                        name_program = "qtcreator pyqt5-dev-tools qttools5-dev-tools"
+                    if name_program == "pycharm-community":
+                        command = "sudo snap remove pycharm-community"
+                    else:
+                        command = "sudo apt-get purge {} -y".format(name_program)
 
+            elif self.os_ver == "AstraLinuxSE 1.6":
+                if name_program == "timeshift":
+                    print("Установка прогрв=аммы timeshift")
             t = ActionProgramOutputData(command)
-            t.new_log.connect(self.d.textDebug.insertPlainText)
-            t.progress.connect(self.d.progressBar.setValue)
+            t.new_log.connect(self.textDebug.insertPlainText)
+            t.progress.connect(self.progressBar.setValue)
             t.start()
             while t.isRunning():
                 QtCore.QCoreApplication.processEvents()
                 QtCore.QThread.msleep(150)
-                self.d.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                self.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
             t.quit()
-        self.d.pushButton.setEnabled(True)
-        self.d.pushButton.clicked.connect(lambda: self.clickPushButtonClose())
+        self.pushButton.setEnabled(True)
+        self.pushButton.clicked.connect(lambda: self.clickPushButtonClose())
 
     def clickPushButtonClose(self):
         print("Закрываем окно")
