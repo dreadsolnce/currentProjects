@@ -9,7 +9,7 @@ def OsVersion():
     command_1, command_2 = "cat /etc/lsb-release | grep DISTRIB_ID | awk -F= '{print $2}'", \
                            "cat /etc/lsb-release | grep DISTRIB_RELEASE | awk -F= '{print $2}'"
     os_ver = action_program(command_1) + " " + action_program(command_2)
-    # print("Версия ОС: " + os_ver)
+    print("Версия ОС: " + os_ver)
     return os_ver
 
 

@@ -64,28 +64,6 @@
         <string>Состояние</string>
        </property>
       </column>
-      <item>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="text">
-        <string>PyCharm</string>
-       </property>
-       <property name="text">
-        <string>Не установлено</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="text">
-        <string>Image For Linux</string>
-       </property>
-       <property name="text">
-        <string>Установлено</string>
-       </property>
-      </item>
      </widget>
     </item>
     <item row="2" column="0">

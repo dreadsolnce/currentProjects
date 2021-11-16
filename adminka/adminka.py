@@ -3,8 +3,12 @@
 
 import os
 import sys
-from modules import OsVersion, ListProgramForInstall, InstallProg
-from resources import Ui_MainWindow
+import resources
+# from resources.py.MainWindow import Ui_MainWindow
+# from resources.py.OsVersion import OsVersion
+# from resources.py.ProgramList import ProgramList
+# from resources.py.ProgramState import ProgramState
+# from resources.py.ProgramAction import ProgramAction
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.Qt import Qt
@@ -22,9 +26,16 @@ print("Иконка программы: {}".format(logo))
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        self.l1 = None  # Экземпляр класса списка программ
+        # Инициализация переменных
+        self.os_ver = resources.OsVersion()  # Версия ОС
+        self.p = resources.Programs(self.os_ver)  # Инициализируем класс программы
+
+        self.gui = resources.Ui_MainWindow()
+        # Инициализация основного окна
+        self.initializationMainWindow()
+
+    def initializationMainWindow(self):
         print("Инициализация основного окна программы")
-        self.gui = Ui_MainWindow()
         self.gui.setupUi(self)
         # Задание параметров основного окна
         self.gui.checkBox.setVisible(False)
@@ -61,31 +72,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gui.pushButtonRemove.clicked.connect(lambda: self.clkPushButtonInstall(action="remove"))
         self.gui.action_Exit.triggered.connect(lambda: sys.exit())
 
+    # В зависимотси от версии ОС формируем список программ
     def clkInstallRemove(self):
         print("Нажата кнопка Установка/Удаление")
         self.enableWidget()
-        # Версия ОС
-        self.os_version = OsVersion()
-        print("Версия ОС: {}".format(self.os_version))
-        # Список программ
-        self.l1 = ListProgramForInstall(self.os_version)
-        s = self.l1.listProgram()
-        print("Доступный список программ для установки: {}".format(s))
-        self.fillingProgramList(s)
+        lst_prog = self.p.list_program   # Список програм
+        self.fillingProgramList(lst_prog)
 
-    def fillingProgramList(self, list_program):
+    # Формируем словарь с именем программы и ключом (состояние программы)
+    def fillingProgramList(self, lst_program):
         self.gui.treeWidget.clear()
-        list_state_program = self.l1.stateProgram(list_program)
-        for name_prog in list_program:
+        state_program = self.p.stateProg()  # Словарь: прграмма:статус программы (0 - не установлена, 1 - установлена)
+        self.fillingGadget(state_program, lst_program)
+
+    # Заполняем гаджет со списком программ
+    def fillingGadget(self, state_program, lst_program):
+        for name in lst_program:
             child = QtWidgets.QTreeWidgetItem(self.gui.treeWidget)
             child.setCheckState(0, Qt.Unchecked)
-            child.setText(1, name_prog)
-            if list_state_program[name_prog] == 0:
-                child.setForeground(2, QtGui.QBrush(Qt.darkGreen))
-                child.setText(2, "Установлена")
-            elif list_state_program[name_prog] == 1:
+            child.setText(1, name)
+            if state_program[name] == 0:
                 child.setForeground(2, QtGui.QBrush(Qt.darkRed))
                 child.setText(2, "Отсутствует")
+            elif state_program[name] == 1:
+                child.setForeground(2, QtGui.QBrush(Qt.darkGreen))
+                child.setText(2, "Установлена")
 
     def clkCheckbox(self):
         print("Нажат чекбокс")
@@ -107,13 +118,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 current_element.setCheckState(0, Qt.Unchecked)
 
     def clkPushButtonInstall(self, action=None):
-        text = None
         if action == "install":
             print("Нажата кнопка установить")
-            text = "Устанавливаем программу: {}"
         elif action == "remove":
             print("Нажата кнопка удалить")
-            text = "Удаляем программу: {}"
         count_row = self.gui.treeWidget.topLevelItemCount()
         name_prog_list = []
         for count in range(count_row):
@@ -121,10 +129,9 @@ class MainWindow(QtWidgets.QMainWindow):
             if current_element.checkState(0):
                 name_prog = current_element.text(1)
                 name_prog_list.append(name_prog)
-                print(text.format(name_prog))
-        ins = InstallProg(self.os_version)
-        ins.installProg(action, name_prog_list)
-        self.clkInstallRemove()  # Обновляем список состояния программ
+        if name_prog_list:
+            self.p.actionProg(os_ver=self.os_ver, action=action, lst_name_prog=name_prog_list)
+            self.clkInstallRemove()  # # Обновляем список состояния программ
 
     # Показ виджетов
     def enableWidget(self):
@@ -142,6 +149,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
+    print("Основное окно")
     app = QtWidgets.QApplication(sys.argv)
     app1 = MainWindow()
     sys.exit(app.exec_())

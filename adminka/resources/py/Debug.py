@@ -14,23 +14,26 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        print(type(Form))
         Form.resize(594, 378)
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
-        self.textDebug = QtWidgets.QTextBrowser(Form)
-        self.textDebug.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.textDebug.setObjectName("textDebug")
-        self.gridLayout.addWidget(self.textDebug, 0, 0, 1, 1)
+        self.pushButton = QtWidgets.QPushButton(Form)
+        self.pushButton.setEnabled(False)
+        self.pushButton.setObjectName("pushButton")
+        self.gridLayout.addWidget(self.pushButton, 3, 0, 1, 1)
         self.progressBar = QtWidgets.QProgressBar(Form)
         self.progressBar.setMaximum(100)
         self.progressBar.setProperty("value", 0)
         self.progressBar.setObjectName("progressBar")
         self.gridLayout.addWidget(self.progressBar, 1, 0, 1, 1)
-        self.pushButton = QtWidgets.QPushButton(Form)
-        self.pushButton.setEnabled(False)
-        self.pushButton.setObjectName("pushButton")
-        self.gridLayout.addWidget(self.pushButton, 2, 0, 1, 1)
+        self.textDebug = QtWidgets.QTextBrowser(Form)
+        self.textDebug.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.textDebug.setObjectName("textDebug")
+        self.gridLayout.addWidget(self.textDebug, 0, 0, 1, 1)
+        self.pushButton_2 = QtWidgets.QPushButton(Form)
+        self.pushButton_2.setEnabled(False)
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.gridLayout.addWidget(self.pushButton_2, 2, 0, 1, 1)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -38,9 +41,10 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Отладочное окно"))
+        self.pushButton.setText(_translate("Form", "Закрыть"))
         self.textDebug.setHtml(_translate("Form", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Cantarell\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
-        self.pushButton.setText(_translate("Form", "Закрыть"))
+        self.pushButton_2.setText(_translate("Form", "Сохранить лог в файл"))
