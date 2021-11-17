@@ -92,11 +92,11 @@ class MainWindow(QtWidgets.QMainWindow):
             child.setCheckState(0, Qt.Unchecked)
             child.setText(1, name)
             if state_program[name] == 0:
-                child.setForeground(2, QtGui.QBrush(Qt.darkRed))
-                child.setText(2, "Отсутствует")
-            elif state_program[name] == 1:
                 child.setForeground(2, QtGui.QBrush(Qt.darkGreen))
                 child.setText(2, "Установлена")
+            elif state_program[name] == 1:
+                child.setForeground(2, QtGui.QBrush(Qt.darkRed))
+                child.setText(2, "Отсутствует")
 
     def clkCheckbox(self):
         print("Нажат чекбокс")
@@ -130,6 +130,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 name_prog = current_element.text(1)
                 name_prog_list.append(name_prog)
         if name_prog_list:
+            # self.os_ver = '"AstraLinuxSE" 1.6'
             self.p.actionProg(os_ver=self.os_ver, action=action, lst_name_prog=name_prog_list)
             self.clkInstallRemove()  # # Обновляем список состояния программ
 
