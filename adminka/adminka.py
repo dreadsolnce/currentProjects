@@ -27,7 +27,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         # Инициализация переменных
-        self.os_ver = resources.OsVersion()  # Версия ОС
+        # self.os_ver = resources.OsVersion()  # Версия ОС
+        self.os_ver = '"AstraLinuxSE" 1.6'
         self.p = resources.Programs(self.os_ver)  # Инициализируем класс программы
 
         self.gui = resources.Ui_MainWindow()
@@ -130,7 +131,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 name_prog = current_element.text(1)
                 name_prog_list.append(name_prog)
         if name_prog_list:
-            # self.os_ver = '"AstraLinuxSE" 1.6'
             self.p.actionProg(os_ver=self.os_ver, action=action, lst_name_prog=name_prog_list)
             self.clkInstallRemove()  # # Обновляем список состояния программ
 

@@ -14,9 +14,12 @@ if __name__ == "__main__":
     from Debug import Ui_Form
 else:
     from .Debug import Ui_Form
+    from .chice_bginfo import Bginfo_Form
 
 
 class Programs(QtWidgets.QDialog):
+    PATH_CONFIG_BGINFO = sys.path[0] + "/files/bginfo/"
+
     def __init__(self, os_ver=None):
         super().__init__()
         self.os_ver = os_ver  # Версия ОС
@@ -29,7 +32,7 @@ class Programs(QtWidgets.QDialog):
         if self.os_ver == "Ubuntu 21.04":
             self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "isomaster"]
         elif self.os_ver == '"AstraLinuxSE" 1.6':
-            self.list_program = ["timeshift"]
+            self.list_program = ["timeshift", "bginfo"]
         print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
     # Определение состояния пакета в системе (0 - неустановлен, 1 - установлен)
@@ -47,11 +50,11 @@ class Programs(QtWidgets.QDialog):
             else:
                 command = "sudo dpkg --list | grep " + name + " | awk '{print $2}' | grep -E ^" + name + "$ >/dev/null; echo $?"
 
-            out = runCommandReturnCode(command)
+            out = runCommandReturnOut(command)
             state_program[name] = out
-            if out:
+            if not out:
                 print("Программа {} : установлена".format(name))
-            elif not out:
+            elif out:
                 print("Программа {} : не установлена".format(name))
         return state_program
 
@@ -119,6 +122,24 @@ class Programs(QtWidgets.QDialog):
                     QtCore.QThread.msleep(150)
                     self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
                 process_th.quit()
+            if name == "bginfo":
+                conf = None  # Переменная пути конфигурационного файла
+                print("Выбран BgInfo")
+                self.b2 = ChoiceBginfoWin()
+                self.b2.exec()
+                if self.b2.conf_bg == "Богданов":
+                    conf = self.PATH_CONFIG_BGINFO + "bginfo.bpb.bg"
+                elif self.b2.conf_bg == "Колчин":
+                    conf = self.PATH_CONFIG_BGINFO + "bginfo.kvl.bg"
+                proc_th = SetupBginfo(action=action, config=conf)
+                proc_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                proc_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                proc_th.start()
+                while proc_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                proc_th.quit()
         self.debugButtonAct()
 
     def debugButtonAct(self):
@@ -197,7 +218,7 @@ class SetupTimeshift(QtCore.QThread):
         sleep(0.2)
 
     def unrar_arch(self):
-        tar_gz_arch = self.files_path + "/files/pack_timeshift.tar.gz"
+        tar_gz_arch = self.files_path + "/files/timeshift/pack_timeshift.tar.gz"
         print("Путь до архива с программой timeshift: {}".format(tar_gz_arch))
         if os.path.isfile(tar_gz_arch):
             print("Архив существует")
@@ -241,8 +262,87 @@ class SetupTimeshift(QtCore.QThread):
             sleep(0.2)
 
 
-# Запуск команды с выводом кода выполнения
-def runCommandReturnCode(command):
+class SetupBginfo(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, action=None, config=None):
+        super().__init__()
+        self.count = 0
+        self.act = action
+        self.config = config
+        self.exit_code = 0
+
+    def run(self):
+        if self.act == "install":
+            txt = None  # Переменная содержащая текст для вывода
+            print("Устанавливаем программу Bginfo с конф файлом {}".format(self.config))
+            if os.path.isfile(self.config):
+                dist_file = "/usr/local/bin/bginfo.bg"
+                out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
+                err = str(err)
+                if err:
+                    txt = err.decode('utf-8', 'ignore')
+                    self.exit_code = 1
+                elif not err:
+                    txt = "Выполнено копирование конфигурационного файла \n"
+                self.count += 1
+                self.new_log.emit(str(txt))
+                self.progress.emit(self.count)
+                sleep(0.01)
+                if not self.exit_code:
+                    err = runCommandReturnErr("sudo chmod 777 {}".format(dist_file))
+                    if err:
+                        txt = err.decode("utf-8", "ignore")
+                        self.exit_code = 1
+                    elif not err:
+                        txt = "\n Выполнено изменение разрешений на файл \n"
+                    self.count += 1
+                    self.new_log.emit(str(txt))
+                    self.progress.emit(self.count)
+                    sleep(0.01)
+                if not self.exit_code:
+                    # os.system(dist_file + "&")
+                    dist_file = "/etc/xdg/autostart/bginfo.desktop"
+                    err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
+                    if err:
+                        txt = err.decode("utf-8", "ignore")
+                        self.exit_code = 1
+                    elif not err:
+                        txt = "Программа BgInfo добавлена в автозагрузку \n"
+                    self.count += 1
+                    self.new_log.emit(str(txt))
+                    self.progress.emit(self.count)
+                    sleep(0.01)
+                if not self.exit_code:
+                    txt = "Установка программы Bginfo выполенна успешно!"
+                    self.count += 1
+                    self.new_log.emit(str(txt))
+                    self.progress.emit(self.count)
+                    sleep(0.01)
+            else:
+                self.errNotFindFile()
+        elif self.act == "remove":
+            print("Удаляем программу Bginfo с конф файлом {}".format(self.config))
+
+    def errNotFindFile(self):
+        txt = "Ошибка! Не найден конфигурационный файл"
+        self.new_log.emit(txt)
+        print(txt)
+        self.exit_code = 1
+
+
+# Запуск команды с выводом данных выполнения
+def runCommandReturnErr(command):
+    process = subprocess.Popen(command, shell=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    out, err = process.communicate()
+    return out, err
+
+
+# Запуск команды с выводом данных выполнения
+def runCommandReturnOut(command):
     out = None
     if command:
         proc = subprocess.Popen(command, shell=True,
@@ -260,6 +360,21 @@ class DebugWin(QtWidgets.QDialog):
         self.dg.pushButton.setEnabled(False)
         self.dg.pushButton_2.setEnabled(False)
         self.show()
+
+
+class ChoiceBginfoWin(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.conf_bg = None
+        self.b1 = Bginfo_Form()
+        self.b1.setupUi(self)
+
+        self.b1.pushButton.clicked.connect(self.act)
+
+    def act(self):
+        self.conf_bg = self.b1.comboBox.currentText()
+        print("Выбрана конфигурация товарища {0}а".format(self.conf_bg))
+        self.close()
 
 
 if __name__ == "__main__":
