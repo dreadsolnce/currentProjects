@@ -4,14 +4,10 @@
 import os
 import sys
 import resources
-# from resources.py.MainWindow import Ui_MainWindow
-# from resources.py.OsVersion import OsVersion
-# from resources.py.ProgramList import ProgramList
-# from resources.py.ProgramState import ProgramState
-# from resources.py.ProgramAction import ProgramAction
 
-from PyQt5 import QtWidgets, QtGui
 from PyQt5.Qt import Qt
+from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QDesktopWidget
 
 """
@@ -24,15 +20,16 @@ print("Иконка программы: {}".format(logo))
 
 
 class MainWindow(QtWidgets.QMainWindow):
+
     def __init__(self):
         super().__init__()
         # Инициализация переменных
-        # self.os_ver = resources.OsVersion()  # Версия ОС
-        self.os_ver = '"AstraLinuxSE" 1.6'
-        self.p = resources.Programs(self.os_ver)  # Инициализируем класс программы
+        self.p = None   # Объект класса программ
+        self.os_ver = resources.OsVersion()  # Версия ОС
+        # self.os_ver = '"AstraLinuxSE" 1.6'
 
-        self.gui = resources.Ui_MainWindow()
         # Инициализация основного окна
+        self.gui = resources.Ui_MainWindow()
         self.initializationMainWindow()
 
     def initializationMainWindow(self):
@@ -44,7 +41,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gui.pushButtonRemove.setVisible(False)
         # Создание иконки программы
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(logo), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(logo))
         self.setWindowIcon(icon)
         # Задание параметров treeWidget
         self.gui.treeWidget.setVisible(False)
@@ -52,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gui.treeWidget.setIndentation(2)
         self.gui.treeWidget.setColumnWidth(0, 60)
         self.gui.treeWidget.setColumnWidth(1, 250)
-        # Изменение статубара
+        # Изменение статуc бара
         self.gui.statusbar.showMessage("Основное окно программы")
         self.gui.centralwidget.setStatusTip("Основное окно программы")
         self.gui.InstallRemove.setStatusTip("Установка и удаление программ")
@@ -73,17 +70,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gui.pushButtonRemove.clicked.connect(lambda: self.clkPushButtonInstall(action="remove"))
         self.gui.action_Exit.triggered.connect(lambda: sys.exit())
 
-    # В зависимотси от версии ОС формируем список программ
+    # В зависимости от версии ОС формируем список программ
     def clkInstallRemove(self):
         print("Нажата кнопка Установка/Удаление")
+        self.p = resources.Programs(self.os_ver)  # Инициализируем класс программы
         self.enableWidget()
-        lst_prog = self.p.list_program   # Список програм
-        self.fillingProgramList(lst_prog)
+        lst_prog = self.p.list_program   # Список программ
+        if not lst_prog:
+            QMessageBox.critical(self, "Ошибка!", "Не поддерживаемая версия ОС", QMessageBox.Ok)
+        else:
+            self.fillingProgramList(lst_prog)
 
     # Формируем словарь с именем программы и ключом (состояние программы)
     def fillingProgramList(self, lst_program):
         self.gui.treeWidget.clear()
-        state_program = self.p.stateProg()  # Словарь: прграмма:статус программы (0 - не установлена, 1 - установлена)
+        state_program = self.p.stateProg()  # Словарь: программа:статус программы (0 - не установлена, 1 - установлена)
         self.fillingGadget(state_program, lst_program)
 
     # Заполняем гаджет со списком программ
@@ -95,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if state_program[name] == 0:
                 child.setForeground(2, QtGui.QBrush(Qt.darkGreen))
                 child.setText(2, "Установлена")
-            elif state_program[name] == 1:
+            elif state_program[name] != 0:
                 child.setForeground(2, QtGui.QBrush(Qt.darkRed))
                 child.setText(2, "Отсутствует")
 
@@ -103,14 +104,14 @@ class MainWindow(QtWidgets.QMainWindow):
         print("Нажат чекбокс")
         if self.gui.checkBox.isChecked():
             self.allCheck(state=True)
-            print("Выделяем все чекбоксы")
+            print("Выделяем все чек боксы")
         elif not self.gui.checkBox.isChecked():
             self.allCheck(state=False)
-            print("Снимаем выделение со всех чекбоксов")
+            print("Снимаем выделение со всех чек боксов")
 
     def allCheck(self, state):
         count_row = self.gui.treeWidget.topLevelItemCount()
-        print("Колличество строк в таблице: {}".format(count_row))
+        print("Количество строк в таблице: {}".format(count_row))
         for count in range(count_row):
             current_element = self.gui.treeWidget.topLevelItem(count)
             if state:
@@ -150,7 +151,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-    print("Основное окно")
     app = QtWidgets.QApplication(sys.argv)
-    app1 = MainWindow()
+    a = resources.CheckSudo()
+    a1 = MainWindow()
     sys.exit(app.exec_())
