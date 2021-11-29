@@ -22,6 +22,7 @@ class Programs(QtWidgets.QDialog):
 
     def __init__(self, os_ver=None):
         super().__init__()
+        self.name_debian = ["Ubuntu 21.04", "Ubuntu 21.10"]
         self.os_ver = os_ver  # Версия ОС
         self.list_program = None  # Список программ
         self.dg_gui = None  # Переменная для инициализации окна Debug
@@ -29,38 +30,47 @@ class Programs(QtWidgets.QDialog):
 
     # Формирование списка программ
     def listProgram(self):
-        if self.os_ver == "Ubuntu 21.04":
-            self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "isomaster"]
+        if self.os_ver in self.name_debian:
+            self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git", "cherrytree",
+                                 "goodvibes"]
         elif self.os_ver == '"AstraLinuxSE" 1.6':
             self.list_program = ["timeshift", "bginfo"]
+
         print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
     # Определение состояния пакета в системе (0 - неустановлен, 1 - установлен)
     def stateProg(self):
         state_program = {}  # Словарь: имя программы:статус программы (0 - не установлен, 1 - установлен)
         # Комманда для snap пакета pycharm-community
-        command_snap = "sudo snap list pycharm-community >/dev/null; echo $?"
+        command_snap = "snap list pycharm-community >/dev/null; echo $?"
         # Комманда для встроенных игр Ubuntu
-        command_games = "sudo dpkg --list | grep gnome-sudoku | awk '{print $2}' | grep -E ^gnome-sudoku$ >/dev/null; echo $?"
-        for name in self.list_program:
+        command_games = "dpkg --list | grep gnome-sudoku | awk '{print $2}' | grep -E ^gnome-sudoku$ >/dev/null; echo $?"
+        # Команда для BgInfo
+        command_bginfo = "cat /usr/local/bin/bginfo.bg >/dev/null; echo $?"
+
+        for name in self.list_program:  # Перебираем весь список доступных программ
             if name == "игры":
                 command = command_games
             elif name == "pycharm-community":
                 command = command_snap
+            elif name == "bginfo":
+                command = command_bginfo
             else:
-                command = "sudo dpkg --list | grep " + name + " | awk '{print $2}' | grep -E ^" + name + "$ >/dev/null; echo $?"
+                command = "dpkg --list | grep " + name + " | awk '{print $2}' | grep -E ^" + name + "$ >/dev/null; echo $?"
 
-            out = runCommandReturnOut(command)
-            state_program[name] = out
+            out = runCommandReturnStateProg(command)    # Код состояния программы
+
+            state_program[name] = out   # Формируем словарь из имени программы и ключа состояния программы
             if not out:
                 print("Программа {} : установлена".format(name))
             elif out:
                 print("Программа {} : не установлена".format(name))
-        return state_program
+        return state_program    # Возвращаем словарь, т.к. данная функция вызывается из внешнего класса
 
     # Запуск установки либо удаления программы в зависимости от версии ОС
     def actionProg(self, os_ver=None, action=None, lst_name_prog=None):
-        if os_ver == "Ubuntu 21.04":
+        # if os_ver == "Ubuntu 21.04":
+        if os_ver in self.name_debian:
             print("Запускаем функцию опредедения экшена для Ubuntu")
             self.__actionProgUbuntu(action, lst_name_prog)
         elif os_ver == '"AstraLinuxSE" 1.6':
@@ -81,9 +91,13 @@ class Programs(QtWidgets.QDialog):
                     name = "python3-pyqt5 qtcreator pyqt5-dev-tools qttools5-dev-tools"
                     command_2 = " ; sudo rm -rf /usr/share/applications/linguist-qt5.desktop"
                     command = "sudo apt-get install {} -y".format(name) + command_2
+                elif name == "mc":
+                    command_2 = " ; sudo rm -rf /usr/share/applications/mcedit.desktop"
+                    command = "sudo apt-get install {} -y".format(name) + command_2
                 else:
                     if name == "игры":
                         name = "aisleriot gnome-mahjongg gnome-mines gnome-sudoku"
+                    # command = "sudo apt-get install {} -y".format(name)
                     command = "sudo apt-get install {} -y".format(name)
             elif action == "remove":
                 print("Удаляем программу {}".format(name))
@@ -125,12 +139,13 @@ class Programs(QtWidgets.QDialog):
             if name == "bginfo":
                 conf = None  # Переменная пути конфигурационного файла
                 print("Выбран BgInfo")
-                self.b2 = ChoiceBginfoWin()
-                self.b2.exec()
-                if self.b2.conf_bg == "Богданов":
-                    conf = self.PATH_CONFIG_BGINFO + "bginfo.bpb.bg"
-                elif self.b2.conf_bg == "Колчин":
-                    conf = self.PATH_CONFIG_BGINFO + "bginfo.kvl.bg"
+                if action == "install":
+                    self.b2 = ChoiceBginfoWin()
+                    self.b2.exec()
+                    if self.b2.conf_bg == "Богданов":
+                        conf = self.PATH_CONFIG_BGINFO + "bginfo.bpb.bg"
+                    elif self.b2.conf_bg == "Колчин":
+                        conf = self.PATH_CONFIG_BGINFO + "bginfo.kvl.bg"
                 proc_th = SetupBginfo(action=action, config=conf)
                 proc_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
                 proc_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
@@ -183,7 +198,7 @@ class RunProcessUbuntuPrograms(QtCore.QThread):
         self.progress.emit(100)
 
 
-# Класс установки
+# Класс установки программы TimeShift
 class SetupTimeshift(QtCore.QThread):
     new_log = QtCore.pyqtSignal(str)
     progress = QtCore.pyqtSignal(int)
@@ -201,21 +216,33 @@ class SetupTimeshift(QtCore.QThread):
         else:
             self.files_path = sys.path[0]
 
-        self.unrar_arch()
-        if not self.exit_code:
-            print("Разархивировали! Продолжаем установку...")
-            self.dpkg_ins()
+        if self.act == "install":
+            self.unrar_arch()
             if not self.exit_code:
-                self.new_log.emit("Установка выполнена успешно!")
+                print("Разархивировали! Продолжаем установку...")
+                self.dpkg_ins()
+                if not self.exit_code:
+                    self.new_log.emit("Установка выполнена успешно!")
+                elif self.exit_code:
+                    self.new_log.emit("Ошибка при установке!")
+            self.progress.emit(100)
+            if os.path.isdir("package"):
+                try:
+                    shutil.rmtree("package")
+                except PermissionError as e:
+                    self.new_log.emit("Ошибка удаление временного каталога! {}".format(e))
+            sleep(0.2)
+        elif self.act == "remove":
+            print("Удаляем программу timeshift")
+            txt = None
+            self.dpkg_remove()
+            if not self.exit_code:
+                txt = "Удаление программы timeshift выполнено успешно!"
             elif self.exit_code:
-                self.new_log.emit("Ошибка при установке!")
-        self.progress.emit(100)
-        if os.path.isdir("package"):
-            try:
-                shutil.rmtree("package")
-            except PermissionError as e:
-                self.new_log.emit("Ошибка удаление временного каталога! {}".format(e))
-        sleep(0.2)
+                txt = "Ошибка при удалении программы timeshift!"
+            print(txt)
+            self.new_log.emit(txt)
+            self.progress.emit(100)
 
     def unrar_arch(self):
         tar_gz_arch = self.files_path + "/files/timeshift/pack_timeshift.tar.gz"
@@ -261,7 +288,25 @@ class SetupTimeshift(QtCore.QThread):
             self.exit_code = self.exit_code + process.returncode
             sleep(0.2)
 
+    def dpkg_remove(self):
+        process = subprocess.Popen("sudo dpkg --purge timeshift",
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        st = True
+        while st:
+            st = process.stdout.readline()
+            self.count += 1
+            self.new_log.emit(str(st.decode('utf-8', 'ignore')))
+            self.progress.emit(self.count)
+            print(st.decode("utf-8"), end="")
+            sleep(0.01)
+        process.communicate()
+        self.exit_code = self.exit_code + process.returncode
+        sleep(0.2)
 
+
+# Класс установки программы BgInfo
 class SetupBginfo(QtCore.QThread):
     new_log = QtCore.pyqtSignal(str)
     progress = QtCore.pyqtSignal(int)
@@ -280,9 +325,9 @@ class SetupBginfo(QtCore.QThread):
             if os.path.isfile(self.config):
                 dist_file = "/usr/local/bin/bginfo.bg"
                 out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
-                err = str(err)
                 if err:
-                    txt = err.decode('utf-8', 'ignore')
+                    # txt = err.decode('utf-8', 'ignore')
+                    txt = err
                     self.exit_code = 1
                 elif not err:
                     txt = "Выполнено копирование конфигурационного файла \n"
@@ -291,12 +336,15 @@ class SetupBginfo(QtCore.QThread):
                 self.progress.emit(self.count)
                 sleep(0.01)
                 if not self.exit_code:
-                    err = runCommandReturnErr("sudo chmod 777 {}".format(dist_file))
+                    print("Изменяем разрешение на файл ", dist_file)
+                    out, err = runCommandReturnErr("sudo chmod 777 {}".format(dist_file))
                     if err:
-                        txt = err.decode("utf-8", "ignore")
+                        # txt = err.decode("utf-8", "ignore")
+                        txt = err
                         self.exit_code = 1
                     elif not err:
-                        txt = "\n Выполнено изменение разрешений на файл \n"
+                        txt = "Выполнено изменение разрешений на файл \n"
+                    print("txt = ", txt)
                     self.count += 1
                     self.new_log.emit(str(txt))
                     self.progress.emit(self.count)
@@ -304,9 +352,10 @@ class SetupBginfo(QtCore.QThread):
                 if not self.exit_code:
                     # os.system(dist_file + "&")
                     dist_file = "/etc/xdg/autostart/bginfo.desktop"
-                    err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
+                    out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
                     if err:
-                        txt = err.decode("utf-8", "ignore")
+                        # txt = err.decode("utf-8", "ignore")
+                        txt = err
                         self.exit_code = 1
                     elif not err:
                         txt = "Программа BgInfo добавлена в автозагрузку \n"
@@ -323,7 +372,42 @@ class SetupBginfo(QtCore.QThread):
             else:
                 self.errNotFindFile()
         elif self.act == "remove":
+            txt = None
             print("Удаляем программу Bginfo с конф файлом {}".format(self.config))
+            dist_file = "/usr/local/bin/bginfo.bg"
+            if os.path.isfile(dist_file):
+                out, err = runCommandReturnErr("sudo rm -rf {}".format(dist_file))
+                if err:
+                    txt = err
+                    self.exit_code = 1
+                elif not err:
+                    txt = "Выполнено удаление конфигурационного файла \n"
+                self.count += 1
+                self.new_log.emit(str(txt))
+                self.progress.emit(self.count)
+                sleep(0.01)
+
+            dist_file = "/etc/xdg/autostart/bginfo.desktop"
+            if os.path.isfile(dist_file):
+                out, err = runCommandReturnErr("sudo rm -rf -R {}".format(dist_file))
+                if err:
+                    txt = err
+                    self.exit_code = 1
+                elif not err:
+                    txt = "Программа BgInfo удалена из автозагрузки! \n"
+                self.count += 1
+                self.new_log.emit(str(txt))
+                self.progress.emit(self.count)
+                sleep(0.01)
+            if not self.exit_code:
+                txt = "Удаление программы Bginfo выполенна успешно!"
+            elif self.exit_code:
+                txt = "Ошибка при удалении программы BgInfo"
+            self.count += 1
+            self.new_log.emit(str(txt))
+            self.progress.emit(self.count)
+            sleep(0.01)
+        self.progress.emit(100)
 
     def errNotFindFile(self):
         txt = "Ошибка! Не найден конфигурационный файл"
@@ -338,17 +422,17 @@ def runCommandReturnErr(command):
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     out, err = process.communicate()
-    return out, err
+    return out.decode("utf-8"), err.decode("utf-8")
 
 
-# Запуск команды с выводом данных выполнения
-def runCommandReturnOut(command):
+# Запуск команды с выводом кода состояния программы
+def runCommandReturnStateProg(command):
     out = None
     if command:
         proc = subprocess.Popen(command, shell=True,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        out = proc.communicate()[0].decode('utf-8')
+        out, err = proc.communicate()
     return int(out)
 
 
