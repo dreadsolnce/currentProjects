@@ -49,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gui.treeWidget.setIndentation(2)
         self.gui.treeWidget.setColumnWidth(0, 60)
         self.gui.treeWidget.setColumnWidth(1, 250)
-        # Изменение статуc бара
+        # Изменение статус бара
         self.gui.statusbar.showMessage("Основное окно программы")
         self.gui.centralwidget.setStatusTip("Основное окно программы")
         self.gui.InstallRemove.setStatusTip("Установка и удаление программ")
