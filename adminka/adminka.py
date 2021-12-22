@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import os
+import subprocess
 import sys
-import resources
+# import resources
+import threading
 
 from PyQt5.Qt import Qt
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QDesktopWidget
 
@@ -150,8 +152,65 @@ class MainWindow(QtWidgets.QMainWindow):
         self.move(qr.topLeft())
 
 
+# Окно таймера
+class TimerMessageBox(QMessageBox, threading.Thread):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("wait")
+        self.time_to_wait = 0
+        self.setText("wait (closing automatically) running in {0} second.".format(self.time_to_wait))
+        self.setStandardButtons(QMessageBox.NoButton)
+        self.timer = QtCore.QTimer(self)
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.change_content)
+        self.timer.start()
+
+    def change_content(self):
+        self.setText("wait (closing automatically) running in {0} second.".format(self.time_to_wait))
+        self.time_to_wait += 1
+        # if threading.activeCount() == 1:
+        if threading.active_count() == 1:
+            self.close()
+
+    def closeEvent(self, event):
+        self.timer.stop()
+        event.accept()
+
+
+def test_lib():
+    list_lib = ['python3-urllib3', 'python3-paramiko', 'python3-chardet', 'python3-requests', 'python3-bs4']
+    for i in list_lib:
+        a1 = check_lib(i)
+        if a1[0] != '0':
+            libs = sys.path[0] + '/files/lib/python3-*'
+            t1 = threading.Thread(target=install_lib, name='Thread1', args=(libs,))
+            t1.start()
+            t2 = TimerMessageBox()
+            t2.exec_()
+            t1.join()
+
+
+# Проверка зависимостей для запуска программы
+def check_lib(name_lib):
+    # name_lib - Имя пакета который необходим для работы программы
+    command = "dpkg --list | grep " + name_lib + " | awk '{print $2}' | grep -E ^" + name_lib + "$ >/dev/null; echo $?"
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = process.communicate()
+    return out.decode("utf-8").split()
+
+
+# Установка библиотек для запуска программы
+def install_lib(name_lib):
+    command = "sudo dpkg -i {}".format(name_lib)
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = process.communicate()
+    print(err.decode('utf-8'))
+
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+    test_lib()
+    import resources
     a = resources.CheckSudo()
-    a1 = MainWindow()
+    a2 = MainWindow()
     sys.exit(app.exec_())

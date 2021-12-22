@@ -4,9 +4,15 @@
 import os
 import sys
 import shutil
+import threading
+import urllib3
+import time
+
+import requests
 import subprocess
 from time import sleep
 from pathlib import Path
+from bs4 import BeautifulSoup
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -32,7 +38,7 @@ class Programs(QtWidgets.QDialog):
     def listProgram(self):
         if self.os_ver in self.name_debian:
             self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git", "cherrytree",
-                                 "goodvibes"]
+                                 "goodvibes", "draw.io"]
         elif self.os_ver == '"AstraLinuxSE" 1.6':
             self.list_program = ["timeshift", "bginfo"]
 
@@ -61,10 +67,10 @@ class Programs(QtWidgets.QDialog):
             out = runCommandReturnStateProg(command)    # Код состояния программы
 
             state_program[name] = out   # Формируем словарь из имени программы и ключа состояния программы
-            if not out:
-                print("Программа {} : установлена".format(name))
-            elif out:
-                print("Программа {} : не установлена".format(name))
+            # if not out:
+            #     print("Программа {} : установлена".format(name))
+            # elif out:
+            #     print("Программа {} : не установлена".format(name))
         return state_program    # Возвращаем словарь, т.к. данная функция вызывается из внешнего класса
 
     # Запуск установки либо удаления программы в зависимости от версии ОС
@@ -110,16 +116,26 @@ class Programs(QtWidgets.QDialog):
                     elif name == "игры":
                         name = "aisleriot gnome-mahjongg gnome-mines gnome-sudoku"
                     command = "sudo apt-get purge {} -y".format(name)
-
-            process_th = RunProcessUbuntuPrograms(command)
-            process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
-            process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
-            process_th.start()
-            while process_th.isRunning():
-                QtCore.QCoreApplication.processEvents()
-                QtCore.QThread.msleep(150)
-                self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
-            process_th.quit()
+            if name == "draw.io":
+                process_th = SetupDiagramNet(act=action)
+                process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                process_th.start()
+                while process_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                process_th.quit()
+            else:
+                process_th = RunProcessUbuntuPrograms(command)
+                process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                process_th.start()
+                while process_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                process_th.quit()
         self.debugButtonAct()
 
     # Установка либо удаление программ AstraLinux 1.6
@@ -416,6 +432,147 @@ class SetupBginfo(QtCore.QThread):
         self.exit_code = 1
 
 
+# Установка программы Diagram.net для Ubuntu
+class SetupDiagramNet(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, act=None):
+        super().__init__()
+        self.act = act
+        self.link = "unknown"
+        self.exit_code = 0
+        self.count = 0
+        self.return_code_download = None
+
+    def run(self):
+        if self.act == "install":
+            self.new_log.emit("Устанавливаем программу diagram.net\n")
+            self.progress.emit(self.count)
+            sleep(1)
+            self.link = self.parsing_diagram_net()
+            sleep(1)
+            if self.link != "unknown":
+                self.count += 1
+                self.progress.emit(self.count)
+                self.download_package()
+                self.count += 1
+                self.progress.emit(self.count)
+                if self.return_code_download == 0:
+                    self.new_log.emit("Загрузка завершена!\n")
+                    return_code_install = self.dpkg_diagram_net_install()
+                    if return_code_install == 0:
+                        self.new_log.emit("Установка завершена успешно!")
+                    else:
+                        self.new_log.emit("Ошибка при установке!")
+                else:
+                    self.new_log.emit("Ошибка при скачивании")
+                self.progress.emit(100)
+        elif self.act == "remove":
+            txt = None
+            self.dpkg_diagram_net_remove()
+            if not self.exit_code:
+                txt = "Удаление программы diagram.net выполнено успешно!"
+            elif self.exit_code:
+                txt = "Ошибка при удалении программы diagram.net"
+            self.new_log.emit(txt)
+            self.progress.emit(100)
+
+    # Парсим сайт программы чтобы узнать текущую версию программы на данный момент
+    def parsing_diagram_net(self):
+        link = "unknown"
+        dn_http = "https://github.com/jgraph/drawio-desktop/releases/latest"
+        user_agent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0"
+        headers = {"user agent": user_agent}
+        urllib3.disable_warnings()
+        html = requests.get(dn_http, headers, verify=False)
+
+        soup = BeautifulSoup(html.content, "html.parser")
+        price = soup.find("div", {"class": "markdown-body my-3"}).find("p").find_all('a')
+
+        for i in price:
+            if "deb" in i.get("href"):
+                link = i.get("href")
+
+        print("Ссылка для скачивания: ", link)
+        self.new_log.emit("Ссылка для скачивания: \n" + link)
+        return link
+
+    # Скачивание пакета по ссылке
+    def download_package(self):
+        self.new_log.emit("\nСкачиваем пакет!\n")
+        sleep(1)
+        t = threading.Thread(target=self.run_down, name='Thread1')
+        t.start()
+        sleep(1)
+        self.run_read()
+        t.join()
+
+    # Запуск процесса скачивания
+    def run_down(self):
+        process = subprocess.Popen("wget --no-check-certificate --output-file=/tmp/test.txt " + self.link,
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        process.communicate()
+        self.return_code_download = process.returncode
+
+    # Чтение фала лога загрузки
+    def run_read(self):
+        file_path = "/tmp/test.txt"
+        s = 0
+        with open(file_path, "r") as f:
+            while True:
+                line = f.readline()
+                if not line:
+                    s += 1
+                    time.sleep(0.1)
+                    if s > 5:
+                        f.close()
+                        break
+                else:
+                    s = 0
+                self.new_log.emit(line)
+
+    # Установка deb пакета
+    def dpkg_diagram_net_install(self):
+        package_name = self.link.split("/")[-1]
+        process = subprocess.Popen("sudo dpkg -i %s" % package_name,
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        st = True
+        while st:
+            st = process.stdout.readline()
+            self.count += 1
+            self.new_log.emit(str(st.decode('utf-8', 'ignore')))
+            self.progress.emit(self.count)
+            print(st.decode("utf-8"), end="")
+            sleep(0.01)
+        process.communicate()
+        sleep(0.2)
+        os.remove(package_name)
+        return process.returncode
+
+    # Удаление программы diagram.net
+    def dpkg_diagram_net_remove(self):
+        process = subprocess.Popen("sudo dpkg --purge draw.io",
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        st = True
+        while st:
+            st = process.stdout.readline()
+            self.count += 1
+            self.new_log.emit(str(st.decode('utf-8', 'ignore')))
+            self.progress.emit(self.count)
+            print(st.decode("utf-8"), end="")
+            sleep(0.01)
+        process.communicate()
+        self.exit_code = self.exit_code + process.returncode
+        sleep(0.2)
+
+
 # Запуск команды с выводом данных выполнения
 def runCommandReturnErr(command):
     process = subprocess.Popen(command, shell=True,
@@ -463,9 +620,6 @@ class ChoiceBginfoWin(QtWidgets.QDialog):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    # u = Programs("Ubuntu 21.04")
-    # u.stateProg()
-    # u.actionProg(os_ver="Ubuntu 21.04", action="install", lst_name_prog=["isomaster"])
     a = Programs('"AstraLinuxSE" 1.6')
     a.stateProg()
     a.actionProg(os_ver='"AstraLinuxSE" 1.6', action="install", lst_name_prog=["timeshift"])
