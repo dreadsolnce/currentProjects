@@ -9,8 +9,20 @@ file4=$HOME"/.bginfo/bg4.tmp"
 file5=$HOME"/.bginfo/bg5.tmp"
 file6=$HOME"/.bginfo/bg6.tmp"
 
-# Размер рамки вывода информации по горизонтали (во весь экран "нулевой экран")
-x_frame=$(echo -e "`xrandr --listactivemonitors | grep 0: | awk '{print $3}' | awk -Fx '{print $1}' | awk -F/ '{print $1}'`" | tr -d '[:space:]')
+# Проверка работоспособности комманды xrandr
+xrandr >/dev/null
+
+if [ $? == 0 ]; then
+    
+    # Размер рамки вывода информации по горизонтали (во весь экран "нулевой экран")
+    x_frame=$(echo -e "`xrandr --listactivemonitors | grep 0: | awk '{print $3}' | awk -Fx '{print $1}' | awk -F/ '{print $1}'`" | tr -d '[:space:]')
+else
+    
+    # Команда xrandr не работает
+    echo "Не поддерживается комманда xrandr"
+    x_frame=$(xdpyinfo -display :0.0 | grep dimensions | egrep -o "[0-9]+x[0-9]+ pixels" | egrep -o "[0-9]+x[0-9]+" | awk -Fx '{print $1}')
+
+fi
 
 # Общая переменная максимального отступа от правой границы экрана.
 max_x_frame=0
@@ -174,3 +186,4 @@ if [ $x_f6 -lt $max_x_frame ]; then max_x_frame=$x_f6; fi
 max_y_frame=$((y_frame_f1+y_frame_f2+y_frame_f3+y_frame_f4+y_frame_f5+y_frame_f6+ch_f1)) 
 
 root-tail -g ${x_frame}x${max_y_frame}+${max_x_frame}+20 -fn -*-courier-bold-r-normal-*-$ch_f1-*-*-*-*-*-* $file1,$color_f1, -fn -*-courier-*-r-normal-*-$ch_f2-*-*-*-*-*-* $file2,LightGray, -fn -*-courier-bold-o-normal-*-$ch_f3-*-*-*-*-*-* $file3,$color_f1, -fn -*-courier-*-r-normal-*-$ch_f4-*-*-*-*-*-* $file4,LightGray, -fn -*-courier-*-r-normal-*-$ch_f5-*-*-*-*-*-* $file5,LightGray, -fn -*-courier-*-r-normal-*-$ch_f6-*-*-*-*-*-* $file6,LightGray,
+

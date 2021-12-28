@@ -1,5 +1,5 @@
 {
-  "backup_device_uuid" : "01752227-a9f4-48b9-b148-4ee62a82f35a",
+  "backup_device_uuid" : "",
   "parent_device_uuid" : "",
   "do_first_run" : "false",
   "btrfs_mode" : "false",
@@ -28,17 +28,16 @@
     "/var/log/***",
     "/var/lib/libvirt/**",
     "/usr/Eleron/Backup/***",
-    "/usr/Eleron/TobolTV/***",
-    "/usr/Eleron/Videoarchive1/***",
-    "/usr/Eleron/Videoarchive2/***",
-    "/usr/Eleron/Videoarchive3/***",
-    "/usr/Eleron/Videoarchive4/***",
-    "/usr/Eleron/Videoarchive5/***",
-    "/usr/Eleron/VideoArchive1/***",
-    "/usr/Eleron/VideoArchive2/***",
-    "/usr/Eleron/VideoArchive3/***",
-    "/usr/Eleron/VideoArchive4/***",
-    "/usr/Eleron/VideoArchive5/***"
+    "/usr/Eleron/TobolTV/Videoarchive1/***",
+    "/usr/Eleron/TobolTV/Videoarchive2/***",
+    "/usr/Eleron/TobolTV/Videoarchive3/***",
+    "/usr/Eleron/TobolTV/Videoarchive4/***",
+    "/usr/Eleron/TobolTV/Videoarchive5/***",
+    "/usr/Eleron/TobolTV/VideoArchive1/***",
+    "/usr/Eleron/TobolTV/VideoArchive2/***",
+    "/usr/Eleron/TobolTV/VideoArchive3/***",
+    "/usr/Eleron/TobolTV/VideoArchive4/***",
+    "/usr/Eleron/TobolTV/VideoArchive5/***"
   ],
   "exclude-apps" : [
   ]

@@ -224,6 +224,7 @@ class SetupTimeshift(QtCore.QThread):
         self.act = act
         self.files_path = None
         self.exit_code = 0
+        self.exit_code_forewarning = False
         self.count = 0
 
     def run(self):
@@ -238,15 +239,25 @@ class SetupTimeshift(QtCore.QThread):
                 print("Разархивировали! Продолжаем установку...")
                 self.dpkg_ins()
                 if not self.exit_code:
-                    self.new_log.emit("Установка выполнена успешно!")
-                elif self.exit_code:
-                    self.new_log.emit("Ошибка при установке!")
+                    if os.path.isdir("package"):
+                        try:
+                            shutil.rmtree("package")
+                        except PermissionError as e:
+                            self.new_log.emit("Ошибка удаления временного каталога! {}\n".format(e))
+                            self.exit_code_forewarning = True
+                    res_err = self.copy_file_conf()
+                    if res_err:
+                        self.new_log.emit("Ошибка при копировании файла настроек!\n")
+                        self.exit_code_forewarning = True
+                    if self.exit_code_forewarning:
+                        self.new_log.emit("Установка выполнена с предупреждениями!\n")
+                    else:
+                        self.new_log.emit("Установка выполнена успешно!\n")
+                else:
+                    self.new_log.emit("Ошибка при установке deb пакета!\n")
+            else:
+                self.new_log.emit("Ошибка при разархивировании архива с программой!\n")
             self.progress.emit(100)
-            if os.path.isdir("package"):
-                try:
-                    shutil.rmtree("package")
-                except PermissionError as e:
-                    self.new_log.emit("Ошибка удаление временного каталога! {}".format(e))
             sleep(0.2)
         elif self.act == "remove":
             print("Удаляем программу timeshift")
@@ -321,6 +332,13 @@ class SetupTimeshift(QtCore.QThread):
         self.exit_code = self.exit_code + process.returncode
         sleep(0.2)
 
+    def copy_file_conf(self):
+        file_conf_src = self.files_path + "/files/timeshift/timeshift.json"
+        file_conf_dst = '/etc/timeshift.json'
+        process = subprocess.Popen("sudo cp {} {}".format(file_conf_src, file_conf_dst), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        return err
+
 
 # Класс установки программы BgInfo
 class SetupBginfo(QtCore.QThread):
@@ -337,56 +355,92 @@ class SetupBginfo(QtCore.QThread):
     def run(self):
         if self.act == "install":
             txt = None  # Переменная содержащая текст для вывода
-            print("Устанавливаем программу Bginfo с конф файлом {}".format(self.config))
-            if os.path.isfile(self.config):
-                dist_file = "/usr/local/bin/bginfo.bg"
-                out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
-                if err:
-                    # txt = err.decode('utf-8', 'ignore')
-                    txt = err
-                    self.exit_code = 1
-                elif not err:
-                    txt = "Выполнено копирование конфигурационного файла \n"
+
+            # Проверяем установлен ли пакет root-tail
+            name_lib = "root-tail"
+            command = "dpkg --list | grep " + name_lib + " | awk '{print $2}' | grep -E ^" + name_lib + "$ >/dev/null; echo $?"
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = process.communicate()
+            if out.decode("utf-8").split()[0] != '0':
+                package = sys.path[0] + "/files/bginfo/root-tail*"
+                #  Устанавливаем пакет так как его нет в системе
+                self.count += 1
+                self.new_log.emit("Устанавливаем пакет root-tail\n")
+                self.progress.emit(self.count)
+                sleep(0.01)
+                process = subprocess.Popen("sudo dpkg -i %s" % package, shell=True,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE)
+                st = True
+                while st:
+                    st = process.stdout.readline()
+                    self.count += 1
+                    self.new_log.emit(str(st.decode('utf-8', 'ignore')))
+                    self.progress.emit(self.count)
+                    print(st.decode("utf-8"), end="")
+                    sleep(0.01)
+                process.communicate()
+                self.exit_code = self.exit_code + process.returncode
+                sleep(0.2)
+            if not self.exit_code:
+                print("Устанавливаем программу Bginfo с конф файлом {}".format(self.config))
+                if os.path.isfile(self.config):
+                    dist_file = "/usr/local/bin/bginfo.bg"
+                    out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
+                    if err:
+                        # txt = err.decode('utf-8', 'ignore')
+                        txt = err
+                        self.exit_code = 1
+                    elif not err:
+                        txt = "Выполнено копирование конфигурационного файла \n"
+                    self.count += 1
+                    self.new_log.emit(str(txt))
+                    self.progress.emit(self.count)
+                    sleep(0.01)
+                    if not self.exit_code:
+                        print("Изменяем разрешение на файл ", dist_file)
+                        out, err = runCommandReturnErr("sudo chmod 777 {}".format(dist_file))
+                        if err:
+                            # txt = err.decode("utf-8", "ignore")
+                            txt = err
+                            self.exit_code = 1
+                        elif not err:
+                            txt = "Выполнено изменение разрешений на файл \n"
+                        print("txt = ", txt)
+                        self.count += 1
+                        self.new_log.emit(str(txt))
+                        self.progress.emit(self.count)
+                        sleep(0.01)
+                    if not self.exit_code:
+                        # os.system(dist_file + "&")
+                        dist_file = "/etc/xdg/autostart/bginfo.desktop"
+                        out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
+                        if err:
+                            # txt = err.decode("utf-8", "ignore")
+                            txt = err
+                            self.exit_code = 1
+                        elif not err:
+                            txt = "Программа BgInfo добавлена в автозагрузку \n"
+                        self.count += 1
+                        self.new_log.emit(str(txt))
+                        self.progress.emit(self.count)
+                        sleep(0.01)
+                    if not self.exit_code:
+                        os.system("/usr/local/bin/bginfo.bg &")
+                    if not self.exit_code:
+                        txt = "Установка программы Bginfo выполенна успешно!"
+                        self.count += 1
+                        self.new_log.emit(str(txt))
+                        self.progress.emit(self.count)
+                        sleep(0.01)
+                else:
+                    self.errNotFindFile()
+            else:
+                txt = "Ошибка установки пакета root-tail!"
                 self.count += 1
                 self.new_log.emit(str(txt))
                 self.progress.emit(self.count)
                 sleep(0.01)
-                if not self.exit_code:
-                    print("Изменяем разрешение на файл ", dist_file)
-                    out, err = runCommandReturnErr("sudo chmod 777 {}".format(dist_file))
-                    if err:
-                        # txt = err.decode("utf-8", "ignore")
-                        txt = err
-                        self.exit_code = 1
-                    elif not err:
-                        txt = "Выполнено изменение разрешений на файл \n"
-                    print("txt = ", txt)
-                    self.count += 1
-                    self.new_log.emit(str(txt))
-                    self.progress.emit(self.count)
-                    sleep(0.01)
-                if not self.exit_code:
-                    # os.system(dist_file + "&")
-                    dist_file = "/etc/xdg/autostart/bginfo.desktop"
-                    out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
-                    if err:
-                        # txt = err.decode("utf-8", "ignore")
-                        txt = err
-                        self.exit_code = 1
-                    elif not err:
-                        txt = "Программа BgInfo добавлена в автозагрузку \n"
-                    self.count += 1
-                    self.new_log.emit(str(txt))
-                    self.progress.emit(self.count)
-                    sleep(0.01)
-                if not self.exit_code:
-                    txt = "Установка программы Bginfo выполенна успешно!"
-                    self.count += 1
-                    self.new_log.emit(str(txt))
-                    self.progress.emit(self.count)
-                    sleep(0.01)
-            else:
-                self.errNotFindFile()
         elif self.act == "remove":
             txt = None
             print("Удаляем программу Bginfo с конф файлом {}".format(self.config))
@@ -416,6 +470,7 @@ class SetupBginfo(QtCore.QThread):
                 self.progress.emit(self.count)
                 sleep(0.01)
             if not self.exit_code:
+                os.system("pkill root-tail")
                 txt = "Удаление программы Bginfo выполенна успешно!"
             elif self.exit_code:
                 txt = "Ошибка при удалении программы BgInfo"

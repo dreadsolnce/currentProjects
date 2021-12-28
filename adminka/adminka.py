@@ -4,7 +4,6 @@
 import os
 import subprocess
 import sys
-# import resources
 import threading
 
 from PyQt5.Qt import Qt
