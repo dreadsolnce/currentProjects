@@ -3,6 +3,7 @@
 
 import os
 import sys
+import glob
 import shutil
 import threading
 import urllib3
@@ -40,7 +41,7 @@ class Programs(QtWidgets.QDialog):
             self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git", "cherrytree",
                                  "goodvibes", "draw.io"]
         elif self.os_ver == '"AstraLinuxSE" 1.6':
-            self.list_program = ["timeshift", "bginfo"]
+            self.list_program = ["timeshift", "bginfo", "vnc server 5"]
 
         print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
@@ -53,6 +54,8 @@ class Programs(QtWidgets.QDialog):
         command_games = "dpkg --list | grep gnome-sudoku | awk '{print $2}' | grep -E ^gnome-sudoku$ >/dev/null; echo $?"
         # Команда для BgInfo
         command_bginfo = "cat /usr/local/bin/bginfo.bg >/dev/null; echo $?"
+        # Комманд для vncserver 5.3.1
+        command_vnc5 = "dpkg --list | grep realvnc | awk '{print $3}' | grep '5.3.1.17370' >/dev/null; echo $?"
 
         for name in self.list_program:  # Перебираем весь список доступных программ
             if name == "игры":
@@ -61,6 +64,8 @@ class Programs(QtWidgets.QDialog):
                 command = command_snap
             elif name == "bginfo":
                 command = command_bginfo
+            elif name == "vnc server 5":
+                command = command_vnc5
             else:
                 command = "dpkg --list | grep " + name + " | awk '{print $2}' | grep -E ^" + name + "$ >/dev/null; echo $?"
 
@@ -171,6 +176,17 @@ class Programs(QtWidgets.QDialog):
                     QtCore.QThread.msleep(150)
                     self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
                 proc_th.quit()
+            if name == "vnc server 5":
+                process_th = SetupVncServer5(action=action)
+                process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                process_th.start()
+                while process_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                process_th.quit()
+
         self.debugButtonAct()
 
     def debugButtonAct(self):
@@ -485,6 +501,96 @@ class SetupBginfo(QtCore.QThread):
         self.new_log.emit(txt)
         print(txt)
         self.exit_code = 1
+
+
+# Установка программы Vnc Server 5
+class SetupVncServer5(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, action=None):
+        super().__init__()
+        self.count = 0
+        self.exit_code = 0
+        self.action = action
+        self.tar_gz_arch = sys.path[0] + "/files/vnc/vncserver5/VNC-5.3.1-Linux-x64-DEB.tar.gz"
+
+    def run(self):
+        if self.action == "install":
+            if os.path.isfile(self.tar_gz_arch):
+                text = "Разархивируем архив с программой в папку /tmp\n"
+                self.new_log.emit(text)
+                self.run_process("tar xvzf %s -C /tmp/" % self.tar_gz_arch)
+                if self.exit_code:
+                    text = "Ошибка при распаковке!"
+                    self.new_log.emit(text)
+                if not self.exit_code:
+                    command = "sudo dpkg -i /tmp/VNC-Server*.deb"
+                    self.run_process(command)
+                if self.exit_code:
+                    text = "Ошибка при установке!"
+                    self.new_log.emit(text)
+                if not self.exit_code:
+                    text = "Установка выполнена успешно!"
+                    self.new_log.emit(text)
+            else:
+                text = "Ошибка! Не найден архив с программой!"
+                self.new_log.emit(text)
+                self.exit_code = 1
+        elif self.action == "remove":
+            text = "Останавливаем службу\n"
+            self.new_log.emit(text)
+            command = "sudo systemctl stop vncserver-x11-serviced"
+            self.run_process(command)
+            if self.exit_code:
+                text = "Ошибка остановки службы"
+                self.new_log.emit(text)
+            elif not self.exit_code:
+                text = "Служба остановлена\n"
+                self.new_log.emit(text)
+            if not self.exit_code:
+                command = "sudo dpkg --purge realvnc-vnc-server"
+                self.run_process(command)
+            if self.exit_code:
+                text = "Ошибка удаления программы!"
+                self.new_log.emit(text)
+            else:
+                text = "Пакет удален!\n"
+                self.new_log.emit(text)
+            text = "Удаляем следы программы"
+            self.new_log.emit(text)
+            self.delete_file()
+            text = "Удаление программы завершено успешно!"
+            self.new_log.emit(text)
+        self.progress.emit(100)
+
+    def run_process(self, command):
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        line_out = True
+        while line_out:
+            line_out = process.stdout.readline()
+            self.new_log.emit(line_out.decode('utf-8', 'ignore'))
+            self.progress.emit(self.count)
+            print(line_out.decode("utf-8"), end="")
+            self.count += 1
+            sleep(0.01)
+        process.communicate()
+        self.exit_code = self.exit_code + process.returncode
+        sleep(0.2)
+
+    def delete_file(self):
+        file1 = "/etc/vnc"
+        file2 = "/home/*/.vnc"
+        file3 = "/root/.vnc"
+        file4 = "/run/vncserver-x11-serviced.pid"
+        file5 = "/etc/systemd/system/multi-user.target.wants/vncserver-x11-serviced.service"
+        file6 = "/usr/lib/systemd/system/vncserver-virtuald.service /usr/lib/systemd/system/vncserver-x11-serviced.service"
+        command = "sudo rm -rf {0} {1} {2} {3} {4} {5}".format(file1, file2, file3, file4, file5, file6)
+        self.run_process(command)
+
+        for f in glob.iglob("/home/*/.fly/realvnc-*"):  # generator, search immediate subdirectories
+            command = "sudo rm -rf {0}".format(f)
+            self.run_process(command)
 
 
 # Установка программы Diagram.net для Ubuntu
