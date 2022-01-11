@@ -524,15 +524,56 @@ class SetupVncServer5(QtCore.QThread):
                 if self.exit_code:
                     text = "Ошибка при распаковке!"
                     self.new_log.emit(text)
-                if not self.exit_code:
+                elif not self.exit_code:
                     command = "sudo dpkg -i /tmp/VNC-Server*.deb"
                     self.run_process(command)
-                if self.exit_code:
-                    text = "Ошибка при установке!"
-                    self.new_log.emit(text)
-                if not self.exit_code:
-                    text = "Установка выполнена успешно!"
-                    self.new_log.emit(text)
+                    if self.exit_code:
+                        text = "Ошибка при установке!"
+                        self.new_log.emit(text)
+                    elif not self.exit_code:
+                        command = "sudo vnclicense -add YMDFH-2BU2P-E4L4E-HRQ4S-PHTDA"
+                        self.run_process(command)
+                        if self.exit_code:
+                            text = "Ошибка активации сервера vnc"
+                            self.new_log.emit(text)
+                        elif not self.exit_code:
+                            text = "Добавляем службу в автозагрузку\n"
+                            self.new_log.emit(text)
+                            sleep(1)
+                            command = "sudo systemctl enable vncserver-x11-serviced"
+                            self.run_process(command)
+                            if self.exit_code:
+                                text = "Ошибка добавления службы в автозагрузку"
+                                self.new_log.emit(text)
+                            elif not self.exit_code:
+                                text = "Запускаем службу\n"
+                                self.new_log.emit(text)
+                                sleep(1)
+                                command = "sudo systemctl start vncserver-x11-serviced.service"
+                                self.run_process(command)
+                                if self.exit_code:
+                                    text = "Ошибка запуска службы"
+                                    self.new_log.emit(text)
+                                elif not self.exit_code:
+                                    text = "Копируем файл с настройками программы common.custom в /etc/vnc/config.d/\n"
+                                    self.new_log.emit(text)
+                                    sleep(1)
+                                    command = "sudo mv /tmp/common.custom /etc/vnc/config.d/common.custom"
+                                    self.run_process(command)
+                                    if self.exit_code:
+                                        text = "Ошибка применения настроек!"
+                                        self.new_log.emit(text)
+                                    elif not self.exit_code:
+                                        text = "Удаляем временные файлы\n"
+                                        self.new_log.emit(text)
+                                        sleep(1)
+                                        self.delete_file_for_install()
+                                        if self.exit_code:
+                                            text = "Ошибка при удалении временных файлов!"
+                                            self.new_log.emit(text)
+                                        elif not self.exit_code:
+                                            text = "Установка выполнена успешно!"
+                                            self.new_log.emit(text)
             else:
                 text = "Ошибка! Не найден архив с программой!"
                 self.new_log.emit(text)
@@ -557,7 +598,7 @@ class SetupVncServer5(QtCore.QThread):
             else:
                 text = "Пакет удален!\n"
                 self.new_log.emit(text)
-            text = "Удаляем следы программы"
+            text = "Удаляем следы программы\n"
             self.new_log.emit(text)
             self.delete_file()
             text = "Удаление программы завершено успешно!"
@@ -578,6 +619,7 @@ class SetupVncServer5(QtCore.QThread):
         self.exit_code = self.exit_code + process.returncode
         sleep(0.2)
 
+    # Удаление следов программы
     def delete_file(self):
         file1 = "/etc/vnc"
         file2 = "/home/*/.vnc"
@@ -591,6 +633,16 @@ class SetupVncServer5(QtCore.QThread):
         for f in glob.iglob("/home/*/.fly/realvnc-*"):  # generator, search immediate subdirectories
             command = "sudo rm -rf {0}".format(f)
             self.run_process(command)
+
+    # Удаление временных, которые создаются при установке программы
+    def delete_file_for_install(self):
+        file1 = "/tmp/common.custom"
+        file2 = "/tmp/key_vnc.txt"
+        file3 = "/tmp/realvnc-vncviewer.desktop"
+        file4 = "/tmp/VNC-Server-5.3.1-Linux-x64.deb"
+        file5 = "/tmp/VNC-Viewer-5.3.1-Linux-x64.deb"
+        command = "sudo rm -rf {0} {1} {2} {3} {4}".format(file1, file2, file3, file4, file5)
+        self.run_process(command)
 
 
 # Установка программы Diagram.net для Ubuntu
