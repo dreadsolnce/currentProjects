@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name = VNC Viewer
+GenericName = VNC Viewer
+Type = Application
+NoDisplay = false
+Comment = Connect to computers running VNC Server
+# Exec = vncaddrbook
+Exec = ssh admin1@k1-pxe vncaddrbook AddressBook=/home/admin1/.vnc/VNCAddressBook/
+Icon = /usr/share/icons/fly-astra/48x48/actions/network-connect.png
+X-FLY-IconContext = Applications
+Hidden = false
+Terminal = false
+StartupNotify = false
+MimeType = application/vnc-shortcut;
+Categories = Application;Network;RemoteAccess;
+Encoding = UTF-8
+X-Ayatana-Desktop-Shortcuts = NewConnection

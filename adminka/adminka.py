@@ -27,8 +27,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # Инициализация переменных
         self.p = None   # Объект класса программ
         self.os_ver = resources.OsVersion()  # Версия ОС
-        # self.os_ver = '"AstraLinuxSE" 1.6'
-
         # Инициализация основного окна
         self.gui = resources.Ui_MainWindow()
         self.initializationMainWindow()

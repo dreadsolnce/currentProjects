@@ -41,7 +41,7 @@ class Programs(QtWidgets.QDialog):
             self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git", "cherrytree",
                                  "goodvibes", "draw.io"]
         elif self.os_ver == '"AstraLinuxSE" 1.6':
-            self.list_program = ["timeshift", "bginfo", "vnc server 5"]
+            self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5"]
 
         print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
@@ -55,7 +55,9 @@ class Programs(QtWidgets.QDialog):
         # Команда для BgInfo
         command_bginfo = "cat /usr/local/bin/bginfo.bg >/dev/null; echo $?"
         # Комманд для vncserver 5.3.1
-        command_vnc5 = "dpkg --list | grep realvnc | awk '{print $3}' | grep '5.3.1.17370' >/dev/null; echo $?"
+        command_vnc5server = "dpkg --list | grep realvnc-vnc-server | awk '{print $3}' | grep '5.3.1.17370' >/dev/null; echo $?"
+        # Команда дял vncviewer 5.3.3
+        command_vnc5viewer = "dpkg --list | grep realvnc-vnc-viewer | awk '{print $3}' | grep '5.3.3' >/dev/null; echo $?"
 
         for name in self.list_program:  # Перебираем весь список доступных программ
             if name == "игры":
@@ -65,7 +67,9 @@ class Programs(QtWidgets.QDialog):
             elif name == "bginfo":
                 command = command_bginfo
             elif name == "vnc server 5":
-                command = command_vnc5
+                command = command_vnc5server
+            elif name == "vnc viewer 5":
+                command = command_vnc5viewer
             else:
                 command = "dpkg --list | grep " + name + " | awk '{print $2}' | grep -E ^" + name + "$ >/dev/null; echo $?"
 
@@ -186,7 +190,16 @@ class Programs(QtWidgets.QDialog):
                     QtCore.QThread.msleep(150)
                     self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
                 process_th.quit()
-
+            if name == "vnc viewer 5":
+                process_th = SetupVncViewer5(action=action)
+                process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                process_th.start()
+                while process_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                process_th.quit()
         self.debugButtonAct()
 
     def debugButtonAct(self):
@@ -280,9 +293,9 @@ class SetupTimeshift(QtCore.QThread):
             txt = None
             self.dpkg_remove()
             if not self.exit_code:
-                txt = "Удаление программы timeshift выполнено успешно!"
+                txt = "Удаление программы timeshift выполнено успешно!\n"
             elif self.exit_code:
-                txt = "Ошибка при удалении программы timeshift!"
+                txt = "Ошибка при удалении программы timeshift!\n"
             print(txt)
             self.new_log.emit(txt)
             self.progress.emit(100)
@@ -487,9 +500,9 @@ class SetupBginfo(QtCore.QThread):
                 sleep(0.01)
             if not self.exit_code:
                 os.system("pkill root-tail")
-                txt = "Удаление программы Bginfo выполенна успешно!"
+                txt = "Удаление программы Bginfo выполенна успешно!\n"
             elif self.exit_code:
-                txt = "Ошибка при удалении программы BgInfo"
+                txt = "Ошибка при удалении программы BgInfo\n"
             self.count += 1
             self.new_log.emit(str(txt))
             self.progress.emit(self.count)
@@ -601,7 +614,7 @@ class SetupVncServer5(QtCore.QThread):
             text = "Удаляем следы программы\n"
             self.new_log.emit(text)
             self.delete_file()
-            text = "Удаление программы завершено успешно!"
+            text = "Удаление программы завершено успешно!\n"
             self.new_log.emit(text)
         self.progress.emit(100)
 
@@ -630,12 +643,25 @@ class SetupVncServer5(QtCore.QThread):
         command = "sudo rm -rf {0} {1} {2} {3} {4} {5}".format(file1, file2, file3, file4, file5, file6)
         self.run_process(command)
 
-        for f in glob.iglob("/home/*/.fly/realvnc-*"):  # generator, search immediate subdirectories
+        for f in glob.iglob("/home/*/.fly/startmenu/*/realvnc-vnclicense*"):  # generator, search immediate subdirectories
+            command = "sudo rm -rf {0}".format(f)
+            self.run_process(command)
+
+        for f in glob.iglob("/home/*/.fly/startmenu/*/realvnc-vncserver*"):  # generator, search immediate subdirectories
             command = "sudo rm -rf {0}".format(f)
             self.run_process(command)
 
     # Удаление временных, которые создаются при установке программы
     def delete_file_for_install(self):
+        # Удаление ярлыков из меню пуск
+        for f in glob.iglob("/home/*/.fly/startmenu/*/realvnc-vnclicense*"):  # generator, search immediate subdirectories
+            command = "sudo rm -rf {0}".format(f)
+            self.run_process(command)
+        for f in glob.iglob("/home/*/.fly/startmenu/*/realvnc-vncserver*"):  # generator, search immediate subdirectories
+            command = "sudo rm -rf {0}".format(f)
+            self.run_process(command)
+
+        # Удаление временных файлов
         file1 = "/tmp/common.custom"
         file2 = "/tmp/key_vnc.txt"
         file3 = "/tmp/realvnc-vncviewer.desktop"
@@ -643,6 +669,123 @@ class SetupVncServer5(QtCore.QThread):
         file5 = "/tmp/VNC-Viewer-5.3.1-Linux-x64.deb"
         command = "sudo rm -rf {0} {1} {2} {3} {4}".format(file1, file2, file3, file4, file5)
         self.run_process(command)
+
+
+# Установка программы Vnc Viewer 5
+class SetupVncViewer5(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, action=None):
+        super().__init__()
+        self.count = 0
+        self.exit_code = 0
+        self.action = action
+        self.dir_vnc_addrbook = "/usr/share/VNCAddressBook"
+        self.deb_pack = sys.path[0] + "/files/vnc/vncviewer5/VNC-Viewer-5.3.3-Linux-x64.deb"
+        self.tag_desk = sys.path[0] + "/files/vnc/vncviewer5/realvnc-vncaddrbook.desktop"
+
+    def run(self):
+        if self.action == "install":
+            if os.path.isfile(self.deb_pack):
+                command = "sudo dpkg -i {}".format(self.deb_pack)
+                self.run_process(command)
+                if self.exit_code:
+                    text = "Ошибка при установке!"
+                    self.new_log.emit(text)
+                elif not self.exit_code:
+                    if not os.path.isdir(self.dir_vnc_addrbook):
+                        command = "sudo mkdir {} && sudo chmod -R 777 {}".format(self.dir_vnc_addrbook, self.dir_vnc_addrbook)
+                        self.run_process(command)
+                        if self.exit_code:
+                            text = "Ошибка создания каталога для vnc addrbook"
+                            self.new_log.emit(text)
+                    text = "Изменяем ярлык VNC Address Book\n"
+                    self.new_log.emit(text)
+                    sleep(1)
+                    if os.path.isfile(self.tag_desk):
+                        command = "sudo cp -R {} ~/.fly/startmenu/network/".format(self.tag_desk)
+                        self.run_process(command)
+                    else:
+                        text = "Ошибка! Не найден файл ярлыка!"
+                        self.new_log.emit(text)
+                    text = "Изменяем настройки ОС для корректного запуска программы\n"
+                    self.new_log.emit(text)
+                    sleep(1)
+                    if not os.path.isfile("/etc/X11/trusted.bak"):
+                        command = "sudo cp /etc/X11/trusted /etc/X11/trusted.bak"
+                        self.run_process(command)
+                        if self.exit_code:
+                            text = "Ошибка создания резервной копии файла /etc/X11/trusted\n"
+                            self.new_log.emit(text)
+                    if os.path.isfile("/etc/X11/trusted.bak"):
+                        exit_code = find_string(file="/etc/X11/trusted", string="/usr/bin/vncviewer(NESTED_R)")
+                        if exit_code == 0:
+                            change_string(file="/etc/X11/trusted",
+                                          old_str="/usr/bin/vncviewer(NESTED_R)",
+                                          new_str="/usr/bin/vncviewer")
+                            if os.path.isfile("/tmp/trusted.tmp"):
+                                command = "sudo mv /tmp/trusted.tmp /etc/X11/trusted"
+                                self.run_process(command)
+                                if self.exit_code:
+                                    text = "Ошибка копирования файла /tmp/trusted.tmp\n"
+                                    self.new_log.emit(text)
+                            else:
+                                text = "Ошибка применения настроек ОС!\n"
+                                self.new_log.emit(text)
+                                sleep(1)
+                    text = "Установка завершена!"
+                    self.new_log.emit(text)
+            else:
+                text = "Ошибка! Не найден deb пакет с программой!"
+                self.new_log.emit(text)
+                self.exit_code = 1
+        elif self.action == "remove":
+            command = "sudo dpkg --purge realvnc-vnc-viewer"
+            self.run_process(command)
+            if self.exit_code:
+                text = "Ошибка при удалении пакета!"
+                self.new_log.emit(text)
+            elif not self.exit_code:
+                text = "Удаляем следы программы\n"
+                self.new_log.emit(text)
+                sleep(1)
+                self.delete_file()
+                text = "Удаление программы завершено успешно!\n"
+                self.new_log.emit(text)
+        self.progress.emit(100)
+
+    def run_process(self, command):
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        line_out = True
+        while line_out:
+            line_out = process.stdout.readline()
+            self.new_log.emit(line_out.decode('utf-8', 'ignore'))
+            self.progress.emit(self.count)
+            print(line_out.decode("utf-8"), end="")
+            self.count += 1
+            sleep(0.01)
+        process.communicate()
+        self.exit_code = self.exit_code + process.returncode
+        sleep(0.2)
+
+    # Удаление следов программы
+    def delete_file(self):
+        for f in glob.iglob("/home/*/.fly/startmenu/*/realvnc-vncviewer*"):  # generator, search immediate subdirectories
+            command = "sudo rm -rf {0}".format(f)
+            self.run_process(command)
+
+        for f in glob.iglob("/home/*/Desktop/realvnc-vncviewer*"):
+            command = "sudo rm -rf {0}".format(f)
+            self.run_process(command)
+
+        for f in glob.iglob("/home/*/Desktop/realvnc-vncaddr*"):
+            command = "sudo rm -rf {0}".format(f)
+            self.run_process(command)
+
+        for f in glob.iglob("/home/*/.fly/startmenu/*/realvnc-vncaddr*"):
+            command = "sudo rm -rf {0}".format(f)
+            self.run_process(command)
 
 
 # Установка программы Diagram.net для Ubuntu
@@ -685,9 +828,9 @@ class SetupDiagramNet(QtCore.QThread):
             txt = None
             self.dpkg_diagram_net_remove()
             if not self.exit_code:
-                txt = "Удаление программы diagram.net выполнено успешно!"
+                txt = "Удаление программы diagram.net выполнено успешно!\n"
             elif self.exit_code:
-                txt = "Ошибка при удалении программы diagram.net"
+                txt = "Ошибка при удалении программы diagram.net\n"
             self.new_log.emit(txt)
             self.progress.emit(100)
 
@@ -806,6 +949,32 @@ def runCommandReturnStateProg(command):
     return int(out)
 
 
+# Функция замены строки
+def change_string(file=None, old_str=None, new_str=None):
+    tmp_file = "/tmp/trusted.tmp"
+    ln_str = ''.join(old_str.split())
+    with open(tmp_file, 'w') as f1:
+        with open(file, 'r') as f:
+            for line in f:
+                ln = ''.join(line.split())
+                if ln_str == ln:
+                    f1.writelines(new_str + '\n')
+                else:
+                    f1.writelines(line)
+
+
+# Функция поиска строки в файле
+def find_string(file=None, string=None):
+    exit_code = -1
+    string = ''.join(string.split())
+    with open(file, 'r') as f:
+        for line in f:
+            ln = ''.join(line.split())
+            if ln == string:
+                exit_code = 0
+    return exit_code
+
+
 class DebugWin(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
@@ -813,6 +982,12 @@ class DebugWin(QtWidgets.QDialog):
         self.dg.setupUi(self)
         self.dg.pushButton.setEnabled(False)
         self.dg.pushButton_2.setEnabled(False)
+        # Создание иконки программы
+        logo = os.path.join(sys.path[0] + "/resources/ico/", "debug.svg")
+        icon = QtGui.QIcon()
+        print(logo)
+        icon.addPixmap(QtGui.QPixmap(logo))
+        self.setWindowIcon(icon)
         self.show()
 
 

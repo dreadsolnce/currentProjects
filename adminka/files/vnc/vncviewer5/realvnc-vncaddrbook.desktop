@@ -1,0 +1,16 @@
+[Desktop Entry]
+Name=VNC Address Book
+GenericName=VNC Address Book
+Type=Application
+Comment=Rapidly connect to computers you've connected to before
+Exec=vncaddrbook AddressBook=/usr/share/VNCAddressBook/
+Icon=/usr/share/icons/hicolor/48x48/apps/vncaddrbook48x48.png
+Categories=Application;Network;RemoteAccess
+Comment[de]=Stellen Sie schnell eine Verbindung zu Computern her, zu denen Sie bereits zuvor eine Verbindung hergestellt haben
+Comment[es]=Conectarse rápidamente a los equipos a los que se ha conectado previamente
+Comment[fr]=Connexion rapide aux ordinateurs auxquels vous vous êtes précédemment connecté
+Encoding=UTF-8
+Name[de]=VNC Address Book
+Name[es]=VNC Address Book
+Name[fr]=VNC Address Book
+X-Fly-OriginFile=/usr/share/applications/realvnc-vncaddrbook.desktop
