@@ -443,7 +443,9 @@ class SetupBginfo(QtCore.QThread):
                     if not self.exit_code:
                         # os.system(dist_file + "&")
                         dist_file = "/etc/xdg/autostart/bginfo.desktop"
-                        out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
+                        desktop_file = sys.path[0] + "/files/bginfo/bginfo.desktop"
+                        # out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
+                        out, err = runCommandReturnErr("sudo cp -R {} {}".format(desktop_file, dist_file))
                         if err:
                             # txt = err.decode("utf-8", "ignore")
                             txt = err
@@ -455,6 +457,7 @@ class SetupBginfo(QtCore.QThread):
                         self.progress.emit(self.count)
                         sleep(0.01)
                     if not self.exit_code:
+                        print("Запускаем программу")
                         os.system("/usr/local/bin/bginfo.bg &")
                     if not self.exit_code:
                         txt = "Установка программы Bginfo выполенна успешно!"

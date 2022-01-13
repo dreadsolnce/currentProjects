@@ -1,3 +1,5 @@
 *.py[cod]
+adminka/resources/__pycache__
+adminka/resources/py/__pycache__
 ubuntu/.idea
 .idea
