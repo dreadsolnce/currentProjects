@@ -206,14 +206,18 @@ class Programs(QtWidgets.QDialog):
                     self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
                 process_th.quit()
             if name == "vnc ярлык":
+                proc_th = None
                 if action == "install":
                     self.b4 = SshDesktopVncWin()
                     self.b4.exec()
-                proc_th = SetupVncDesktop(action=action,
-                                          vncaddrbook=self.b4.vncaddrbook,
-                                          vncviewer=self.b4.vncviewer,
-                                          ip_remote_comp=self.b4.ip_remote_comp,
-                                          name_login_user=self.b4.name_login_user )
+                    proc_th = SetupVncDesktop(action=action,
+                                              vncaddrbook=self.b4.vncaddrbook,
+                                              vncviewer=self.b4.vncviewer,
+                                              ip_remote_comp=self.b4.ip_remote_comp,
+                                              name_login_user=self.b4.name_login_user)
+                elif action == "remove":
+                    proc_th = SetupVncDesktop(action=action)
+
                 proc_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
                 proc_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
                 proc_th.start()
@@ -222,6 +226,7 @@ class Programs(QtWidgets.QDialog):
                     QtCore.QThread.msleep(150)
                     self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
                 proc_th.quit()
+
         self.debugButtonAct()
 
     def debugButtonAct(self):
@@ -823,7 +828,9 @@ class SetupVncDesktop(QtCore.QThread):
         self.count = 0
         self.exit_code = 0
         self.file_etalon_addrbook = sys.path[0] + "/files/vnc/vncdesktop/VNCAddrBook_SSH.desktop"
+        print(self.file_etalon_addrbook)
         self.file_etalon_viewer = sys.path[0] + "/files/vnc/vncdesktop/VNCViewer_SSH.desktop"
+        print(self.file_etalon_viewer)
         self.action = action
         self.vncaddrbook = vncaddrbook
         self.vncviewer = vncviewer
@@ -834,45 +841,68 @@ class SetupVncDesktop(QtCore.QThread):
         if self.action == "install":
             text = "Устанавливаем ярлыки для запуска vncviewer!\n"
             self.new_log.emit(text)
-            sleep(1)
-            self.install_desktop()
+            if self.vncaddrbook is True:
+                self.install_desktop(name="vncaddrbook")
+            if self.vncviewer is True:
+                self.install_desktop(name="vncviewer")
         elif self.action == "remove":
             self.remove_desktop()
-
-    def install_desktop(self):
-        if self.vncaddrbook is True:
-            self.cp_file(self.file_etalon_addrbook)
-            if self.exit_code == 0:
-                self.count += 1
-                self.progress.emit(self.count)
-                text = "Скопировали эталонный файл!\n"
-                self.new_log.emit(text)
-                sleep(1)
-            else:
-                text = "Ошибка копирования файла эталонного файла'\n"
-                self.new_log.emit(text)
-                sleep(1)
-            if self.exit_code == 0:
-                self.count += 1
-                self.progress.emit(self.count)
-                name_file = self.file_etalon_addrbook.split("/")[-1]
-                change_string("{}/Desktop/{}".format(os.getenv("HOME"), name_file), "Exec=",
-                              "Exec=ssh {}@{} vncaddrbook AddressBook=/usr/share/VNCAddressBook/".format(self.name_login_user, self.ip_remote_comp))
-                self.mv_file(file_destination="{}/Desktop/{}".format(os.getenv("HOME"), name_file))
-                if self.exit_code:
-                    text = "Ошибка копирования временного измененного файла\n"
-                    self.new_log.emit(text)
-            if self.exit_code == 0:
-                self.count += 1
-                self.progress.emit(self.count)
-                text = "Ярлык запуска для VNCAddrBook успешно создан на рабочем столе!"
-                self.new_log.emit(text)
-        elif self.vncviewer is True:
-            pass
         self.progress.emit(100)
 
+    def install_desktop(self, name=None):
+        file = None
+        if name == "vncaddrbook":
+            file = self.file_etalon_addrbook
+        elif name == "vncviewer":
+            file = self.file_etalon_viewer
+        self.cp_file(file)
+        if self.exit_code == 0:
+            self.count += 1
+            self.progress.emit(self.count)
+            text = "Скопировали эталонный файл на рабочий стол!\n"
+            self.new_log.emit(text)
+            sleep(1)
+        else:
+            text = "Ошибка копирования файла эталонного файла на рабочий стол'\n"
+            self.new_log.emit(text)
+            sleep(1)
+        if self.exit_code == 0:
+            self.count += 1
+            self.progress.emit(self.count)
+            name_file = file.split("/")[-1]
+            if file == self.file_etalon_addrbook:
+                change_string("{}/Desktop/{}".format(os.getenv("HOME"), name_file), "Exec=",
+                              "Exec=ssh {}@{} vncaddrbook AddressBook=/usr/share/VNCAddressBook/"
+                              .format(self.name_login_user, self.ip_remote_comp))
+            elif file == self.file_etalon_viewer:
+                change_string("{}/Desktop/{}".format(os.getenv("HOME"), name_file), "Exec=",
+                              "Exec=ssh {}@{} vncviewer"
+                              .format(self.name_login_user, self.ip_remote_comp))
+            self.mv_file(file_destination="{}/Desktop/{}".format(os.getenv("HOME"), name_file))
+            if self.exit_code:
+                text = "Ошибка копирования временного измененного файла\n"
+                self.new_log.emit(text)
+            if self.exit_code == 0:
+                self.count += 1
+                self.progress.emit(self.count)
+                text = "Ярлык запуска для {} успешно создан на рабочем столе!\n".format(name_file)
+                self.new_log.emit(text)
+
     def remove_desktop(self):
-        print("Удаляем ярлыки!")
+        command = "rm -rf ~/Desktop/VNCAddrBook_SSH.desktop ~/Desktop/VNCViewer_SSH.desktop"
+        self.run_process(command)
+        if self.exit_code == 0:
+            self.count += 1
+            self.progress.emit(self.count)
+            text = "Ярлыки успешно удалены!\n"
+            self.new_log.emit(text)
+            sleep(2)
+        else:
+            self.count += 1
+            self.progress.emit(self.count)
+            text = "Ошибка при удалении ярлыков!\n"
+            self.new_log.emit(text)
+            sleep(2)
 
     def cp_file(self, file=None):
         command = "cp -R {} ~/Desktop/".format(file)
