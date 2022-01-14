@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=VNC Viewer
+Name[ru]=VNC Viewer
+GenericName=VNC Viewer
+Type=Application
+NoDisplay=false
+Comment=Connect to computers running VNC Server
+Exec=ssh admin1@192.168.111.22 vncviewer
+Icon=/usr/share/icons/Adwaita/48x48/apps/preferences-desktop-remote-desktop.png
+Hidden=false
+Terminal=false
+StartupNotify=false
+MimeType=application/vnc-shortcut
+Categories=Application;Network;RemoteAccess

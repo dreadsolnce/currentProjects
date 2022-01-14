@@ -22,6 +22,7 @@ if __name__ == "__main__":
 else:
     from .Debug import Ui_Form
     from .chice_bginfo import Bginfo_Form
+    from .SshDesktopVnc import Ui_SshDesktopVnc
 
 
 class Programs(QtWidgets.QDialog):
@@ -41,7 +42,7 @@ class Programs(QtWidgets.QDialog):
             self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git", "cherrytree",
                                  "goodvibes", "draw.io"]
         elif self.os_ver == '"AstraLinuxSE" 1.6':
-            self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5"]
+            self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык"]
 
         print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
@@ -58,6 +59,8 @@ class Programs(QtWidgets.QDialog):
         command_vnc5server = "dpkg --list | grep realvnc-vnc-server | awk '{print $3}' | grep '5.3.1.17370' >/dev/null; echo $?"
         # Команда дял vncviewer 5.3.3
         command_vnc5viewer = "dpkg --list | grep realvnc-vnc-viewer | awk '{print $3}' | grep '5.3.3' >/dev/null; echo $?"
+        # Команда для ярлыков программы vnc
+        command_vnc_desktop = "ls -al ~/Desktop/ | grep _SSH.desktop | grep VNC >/dev/null; echo $?"
 
         for name in self.list_program:  # Перебираем весь список доступных программ
             if name == "игры":
@@ -70,6 +73,8 @@ class Programs(QtWidgets.QDialog):
                 command = command_vnc5server
             elif name == "vnc viewer 5":
                 command = command_vnc5viewer
+            elif name == "vnc ярлык":
+                command = command_vnc_desktop
             else:
                 command = "dpkg --list | grep " + name + " | awk '{print $2}' | grep -E ^" + name + "$ >/dev/null; echo $?"
 
@@ -200,6 +205,23 @@ class Programs(QtWidgets.QDialog):
                     QtCore.QThread.msleep(150)
                     self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
                 process_th.quit()
+            if name == "vnc ярлык":
+                if action == "install":
+                    self.b4 = SshDesktopVncWin()
+                    self.b4.exec()
+                proc_th = SetupVncDesktop(action=action,
+                                          vncaddrbook=self.b4.vncaddrbook,
+                                          vncviewer=self.b4.vncviewer,
+                                          ip_remote_comp=self.b4.ip_remote_comp,
+                                          name_login_user=self.b4.name_login_user )
+                proc_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                proc_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                proc_th.start()
+                while proc_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                proc_th.quit()
         self.debugButtonAct()
 
     def debugButtonAct(self):
@@ -791,6 +813,90 @@ class SetupVncViewer5(QtCore.QThread):
             self.run_process(command)
 
 
+# Установка ярлыков программы vnc viewer
+class SetupVncDesktop(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, action=None, vncaddrbook=False, vncviewer=False, ip_remote_comp=None, name_login_user=None):
+        super().__init__()
+        self.count = 0
+        self.exit_code = 0
+        self.file_etalon_addrbook = sys.path[0] + "/files/vnc/vncdesktop/VNCAddrBook_SSH.desktop"
+        self.file_etalon_viewer = sys.path[0] + "/files/vnc/vncdesktop/VNCViewer_SSH.desktop"
+        self.action = action
+        self.vncaddrbook = vncaddrbook
+        self.vncviewer = vncviewer
+        self.ip_remote_comp = ip_remote_comp
+        self.name_login_user = name_login_user
+
+    def run(self):
+        if self.action == "install":
+            text = "Устанавливаем ярлыки для запуска vncviewer!\n"
+            self.new_log.emit(text)
+            sleep(1)
+            self.install_desktop()
+        elif self.action == "remove":
+            self.remove_desktop()
+
+    def install_desktop(self):
+        if self.vncaddrbook is True:
+            self.cp_file(self.file_etalon_addrbook)
+            if self.exit_code == 0:
+                self.count += 1
+                self.progress.emit(self.count)
+                text = "Скопировали эталонный файл!\n"
+                self.new_log.emit(text)
+                sleep(1)
+            else:
+                text = "Ошибка копирования файла эталонного файла'\n"
+                self.new_log.emit(text)
+                sleep(1)
+            if self.exit_code == 0:
+                self.count += 1
+                self.progress.emit(self.count)
+                name_file = self.file_etalon_addrbook.split("/")[-1]
+                change_string("{}/Desktop/{}".format(os.getenv("HOME"), name_file), "Exec=",
+                              "Exec=ssh {}@{} vncaddrbook AddressBook=/usr/share/VNCAddressBook/".format(self.name_login_user, self.ip_remote_comp))
+                self.mv_file(file_destination="{}/Desktop/{}".format(os.getenv("HOME"), name_file))
+                if self.exit_code:
+                    text = "Ошибка копирования временного измененного файла\n"
+                    self.new_log.emit(text)
+            if self.exit_code == 0:
+                self.count += 1
+                self.progress.emit(self.count)
+                text = "Ярлык запуска для VNCAddrBook успешно создан на рабочем столе!"
+                self.new_log.emit(text)
+        elif self.vncviewer is True:
+            pass
+        self.progress.emit(100)
+
+    def remove_desktop(self):
+        print("Удаляем ярлыки!")
+
+    def cp_file(self, file=None):
+        command = "cp -R {} ~/Desktop/".format(file)
+        self.run_process(command)
+
+    def mv_file(self, file_destination=None):
+        command = "sudo mv /tmp/trusted.tmp {}".format(file_destination)
+        self.run_process(command)
+
+    def run_process(self, command):
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        line_out = True
+        while line_out:
+            line_out = process.stdout.readline()
+            self.new_log.emit(line_out.decode('utf-8', 'ignore'))
+            self.progress.emit(self.count)
+            print(line_out.decode("utf-8"), end="")
+            self.count += 1
+            sleep(0.01)
+        process.communicate()
+        self.exit_code = self.exit_code + process.returncode
+        sleep(0.2)
+
+
 # Установка программы Diagram.net для Ubuntu
 class SetupDiagramNet(QtCore.QThread):
     new_log = QtCore.pyqtSignal(str)
@@ -1007,6 +1113,48 @@ class ChoiceBginfoWin(QtWidgets.QDialog):
         self.conf_bg = self.b1.comboBox.currentText()
         print("Выбрана конфигурация товарища {0}а".format(self.conf_bg))
         self.close()
+
+
+class SshDesktopVncWin(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.ip_remote_comp = None
+        self.name_login_user = None
+        self.vncaddrbook = False
+        self.vncviewer = False
+        self.b3 = Ui_SshDesktopVnc()
+        self.b3.setupUi(self)
+        self.b3.pushButton.setDisabled(True)
+        self.b3.pushButton.clicked.connect(self.act)
+        self.b3.checkBox.clicked.connect(self.clck_check)
+        self.b3.checkBox_2.clicked.connect(self.clck_check)
+
+    def act(self):
+        if self.b3.checkBox.isChecked():
+            self.vncaddrbook = True
+        elif not self.b3.checkBox.isChecked():
+            self.vncaddrbook = False
+        if self.b3.checkBox_2.isChecked():
+            self.vncviewer = True
+        elif not self.b3.checkBox_2.isChecked():
+            self.vncviewer = False
+        self.conversion_ip()
+        self.name_login_user = self.b3.lineEdit_2.text()
+        self.close()
+
+    def clck_check(self):
+        if self.b3.checkBox.isChecked() or self.b3.checkBox_2.isChecked():
+            self.b3.pushButton.setEnabled(True)
+        elif not self.b3.checkBox.isChecked() and not self.b3.checkBox_2.isChecked():
+            self.b3.pushButton.setDisabled(True)
+
+    # Преобразование ip адреса
+    def conversion_ip(self):
+        list1 = self.b3.lineEdit.text().split(".")
+        list2 = []
+        for i in list1:
+            list2.append(str(int(i)))
+        self.ip_remote_comp = '.'.join(list2)
 
 
 if __name__ == "__main__":

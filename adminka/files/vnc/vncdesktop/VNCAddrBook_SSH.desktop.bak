@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=VNC AddrBook
+Name[ru]=VNC AddrBook
+GenericName=VNC AddrBook
+Type=Application
+NoDisplay=false
+Comment=Connect to computers running VNC Server
+Exec=ssh admin1@192.168.111.22 vncaddrbook AddressBook=/usr/share/VNCAddressBook/
+Icon=/usr/share/icons/fly-astra/48x48/actions/network-connect.png
+Hidden=false
+Terminal=false
+StartupNotify=false
+MimeType=application/vnc-shortcut
+Categories=Application;Network;RemoteAccess
+Encoding=UTF-8
+X-Ayatana-Desktop-Shortcuts=NewConnection
+X-FLY-IconContext=Applications
