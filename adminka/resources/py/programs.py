@@ -21,7 +21,7 @@ if __name__ == "__main__":
     from Debug import Ui_Form
 else:
     from .Debug import Ui_Form
-    from .chice_bginfo import Bginfo_Form
+    from .ChoiceBginfo import Bginfo_Form
     from .SshDesktopVnc import Ui_SshDesktopVnc
 
 
