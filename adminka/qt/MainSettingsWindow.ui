@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainSettingsWindow</class>
+ <widget class="QMainWindow" name="MainSettingsWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>908</width>
+    <height>713</height>
+   </rect>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::DefaultContextMenu</enum>
+  </property>
+  <property name="windowTitle">
+   <string>Настройщик ОС Linux</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../resources/ico/logo.svg</normaloff>../resources/ico/logo.svg</iconset>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QFrame" name="frame_1">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="0">
+        <widget class="QFrame" name="frame_2">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="lineEdit_accesslevel">
+            <property name="statusTip">
+             <string>Уровень доступа к ОС (0 - нименьший, 63 - наивысший)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_1">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Автовход</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="checkBox_autologin">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="statusTip">
+             <string>Уровень доступа к ОС (0 - нименьший, 63 - наивысший)</string>
+            </property>
+            <property name="text">
+             <string>Уровень доступа:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="comboBox_nameuser">
+            <property name="statusTip">
+             <string>Имя пользователя для автовхода</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="statusTip">
+             <string>Имя пользователя для автовхода</string>
+            </property>
+            <property name="text">
+             <string>Имя пользователя:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QFrame" name="frame_3">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>NetworkManager     </string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QRadioButton" name="radioButton_netdisable">
+            <property name="statusTip">
+             <string>Отключить аплет сетевых настроек</string>
+            </property>
+            <property name="text">
+             <string>Отключить</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QRadioButton" name="radioButton_netenable">
+            <property name="statusTip">
+             <string>Включить аплет сетевых настроек</string>
+            </property>
+            <property name="text">
+             <string>Включить</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="checkBox_networkmanager">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QPushButton" name="pushButton_apply">
+         <property name="statusTip">
+          <string>Применить отмеченные изменения</string>
+         </property>
+         <property name="text">
+          <string>Применить</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QCheckBox" name="checkBox_all">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="text">
+       <string>выделить все</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QTreeWidget" name="treeWidget_program">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="statusTip">
+       <string>Список программ для установки</string>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="columnCount">
+       <number>3</number>
+      </property>
+      <attribute name="headerVisible">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="headerCascadingSectionResizes">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="headerHighlightSections">
+       <bool>true</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>V</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Название</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Состояние</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QPushButton" name="pushButton_insprog">
+        <property name="statusTip">
+         <string>Установка программ</string>
+        </property>
+        <property name="text">
+         <string>Установить</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_delprog">
+        <property name="statusTip">
+         <string>Удаление программ</string>
+        </property>
+        <property name="text">
+         <string>Удалить</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>908</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_LocalSettings">
+    <property name="title">
+     <string>Локальная настройка</string>
+    </property>
+    <addaction name="action_MainSettings"/>
+    <addaction name="separator"/>
+    <addaction name="action_Exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_RemoteSettings">
+    <property name="title">
+     <string>Удалённая настройка</string>
+    </property>
+    <addaction name="action_OpenRemoteSettings"/>
+   </widget>
+   <widget class="QMenu" name="menu_NetworkScanner">
+    <property name="title">
+     <string>Сканер сети</string>
+    </property>
+   </widget>
+   <addaction name="menu_LocalSettings"/>
+   <addaction name="menu_RemoteSettings"/>
+   <addaction name="menu_NetworkScanner"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_Exit">
+   <property name="text">
+    <string>Выход</string>
+   </property>
+   <property name="statusTip">
+    <string>Выход из программы</string>
+   </property>
+  </action>
+  <action name="action_MainSettings">
+   <property name="text">
+    <string>Основные параметры</string>
+   </property>
+  </action>
+  <action name="action_OpenRemoteSettings">
+   <property name="text">
+    <string>Открыть</string>
+   </property>
+   <property name="statusTip">
+    <string>Настройка удаленных машин</string>
+   </property>
+  </action>
+ </widget>
+ <tabstops>
+  <tabstop>checkBox_autologin</tabstop>
+  <tabstop>comboBox_nameuser</tabstop>
+  <tabstop>lineEdit_accesslevel</tabstop>
+  <tabstop>checkBox_networkmanager</tabstop>
+  <tabstop>radioButton_netenable</tabstop>
+  <tabstop>radioButton_netdisable</tabstop>
+  <tabstop>pushButton_apply</tabstop>
+  <tabstop>checkBox_all</tabstop>
+  <tabstop>treeWidget_program</tabstop>
+  <tabstop>pushButton_insprog</tabstop>
+  <tabstop>pushButton_delprog</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
