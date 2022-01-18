@@ -23,6 +23,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.os_ver = resources.OsVersion()  # Версия ОС
+        self.pm = None  # Объект resources.ProgramsModule
+
         self.gui = resources.Ui_MainWindow()
         self.main_settings = resources.Ui_MainSettingsWindow()
         self.remote_settings = resources.Ui_RemoteSettingsWindow()
@@ -52,13 +55,19 @@ class MainWindow(QtWidgets.QMainWindow):
     def MenuMainSettingsWindows(self):
         print("Выбрано меню Локальная настройка > Основные параметры")
         self.main_settings.setupUi(self, self.width, self.height)
-        self.main_settings.frame_1.setEnabled(False)
+        self.main_settings.frame_1.setEnabled(False)    # Отключаем не задействованные элементы меню.
+
+        self.pm = resources.ProgramsModule(os_ver=self.os_ver, name_ui=self.main_settings, obj_win=self)
+
         self.actionMenuMainSettingsWindows()
 
     def actionMenuMainSettingsWindows(self):
-        self.main_settings.pushButton_insprog.clicked.connect(lambda: print("Нажата кнопка установить"))
-        self.main_settings.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
+        self.main_settings.checkBox_all.clicked.connect(self.pm.clkCheckbox)
+        self.main_settings.pushButton_insprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="install"))
+        self.main_settings.pushButton_delprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="remove"))
         self.main_settings.action_Exit.triggered.connect(lambda: sys.exit())
+
+        self.main_settings.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
 
     def MenuRemoteSettingsWindows(self):
         print("Выбрано меню Удалённая настройка > Открыть")

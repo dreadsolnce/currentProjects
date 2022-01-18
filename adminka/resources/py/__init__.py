@@ -5,6 +5,7 @@ from .MainRemoteSettingsWindow import Ui_RemoteSettingsWindow
 from .ChoiceBginfo import Bginfo_Form
 from .CheckSudo import CheckSudo
 from .version import OsVersion
-from .programs import Programs
+from .Programs import Programs
+from .ProgramsModule import ProgramsModule
 from .SshDesktopVnc import Ui_SshDesktopVnc
 
