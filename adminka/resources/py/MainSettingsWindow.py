@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainSettingsWindow.ui'
+# Form implementation generated from reading ui file 'adminka/qt/MainSettingsWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -17,7 +17,7 @@ class Ui_MainSettingsWindow(object):
         MainSettingsWindow.resize(width, height)
         MainSettingsWindow.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../resources/ico/logo.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("adminka/qt/../resources/ico/logo.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainSettingsWindow.setWindowIcon(icon)
         MainSettingsWindow.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.centralwidget = QtWidgets.QWidget(MainSettingsWindow)
@@ -37,6 +37,7 @@ class Ui_MainSettingsWindow(object):
         self.gridLayout_6 = QtWidgets.QGridLayout(self.frame_2)
         self.gridLayout_6.setObjectName("gridLayout_6")
         self.lineEdit_accesslevel = QtWidgets.QLineEdit(self.frame_2)
+        self.lineEdit_accesslevel.setEnabled(False)
         self.lineEdit_accesslevel.setObjectName("lineEdit_accesslevel")
         self.gridLayout_6.addWidget(self.lineEdit_accesslevel, 5, 1, 1, 1)
         self.label_1 = QtWidgets.QLabel(self.frame_2)
@@ -52,12 +53,15 @@ class Ui_MainSettingsWindow(object):
         self.checkBox_autologin.setObjectName("checkBox_autologin")
         self.gridLayout_6.addWidget(self.checkBox_autologin, 2, 1, 1, 1)
         self.label_3 = QtWidgets.QLabel(self.frame_2)
+        self.label_3.setEnabled(False)
         self.label_3.setObjectName("label_3")
         self.gridLayout_6.addWidget(self.label_3, 5, 0, 1, 1)
         self.comboBox_nameuser = QtWidgets.QComboBox(self.frame_2)
+        self.comboBox_nameuser.setEnabled(False)
         self.comboBox_nameuser.setObjectName("comboBox_nameuser")
         self.gridLayout_6.addWidget(self.comboBox_nameuser, 4, 1, 1, 1)
         self.label_2 = QtWidgets.QLabel(self.frame_2)
+        self.label_2.setEnabled(False)
         self.label_2.setObjectName("label_2")
         self.gridLayout_6.addWidget(self.label_2, 4, 0, 1, 1)
         self.gridLayout_5.addWidget(self.frame_2, 0, 0, 1, 1)
@@ -76,9 +80,11 @@ class Ui_MainSettingsWindow(object):
         self.label_4.setObjectName("label_4")
         self.gridLayout_7.addWidget(self.label_4, 0, 0, 1, 1)
         self.radioButton_netdisable = QtWidgets.QRadioButton(self.frame_3)
+        self.radioButton_netdisable.setEnabled(False)
         self.radioButton_netdisable.setObjectName("radioButton_netdisable")
         self.gridLayout_7.addWidget(self.radioButton_netdisable, 3, 1, 1, 1)
         self.radioButton_netenable = QtWidgets.QRadioButton(self.frame_3)
+        self.radioButton_netenable.setEnabled(False)
         self.radioButton_netenable.setObjectName("radioButton_netenable")
         self.gridLayout_7.addWidget(self.radioButton_netenable, 3, 0, 1, 1)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -89,6 +95,7 @@ class Ui_MainSettingsWindow(object):
         self.gridLayout_7.addWidget(self.checkBox_networkmanager, 0, 1, 1, 1)
         self.gridLayout_5.addWidget(self.frame_3, 1, 0, 1, 1)
         self.pushButton_apply = QtWidgets.QPushButton(self.frame_1)
+        self.pushButton_apply.setEnabled(False)
         self.pushButton_apply.setObjectName("pushButton_apply")
         self.gridLayout_5.addWidget(self.pushButton_apply, 2, 0, 1, 1)
         self.gridLayout.addWidget(self.frame_1, 0, 0, 1, 1)

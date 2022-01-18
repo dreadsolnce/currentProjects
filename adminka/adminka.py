@@ -61,13 +61,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_settings.setupUi(self, self.width, self.height)
         self.setIcon()
 
-        self.main_settings.frame_1.setEnabled(False)    # Отключаем не задействованные элементы меню.
+        self.main_settings.frame_3.setEnabled(False)    # Отключаем не задействованные элементы меню.
 
         self.pm = resources.ProgramsModule(os_ver=self.os_ver, name_ui=self.main_settings, obj_win=self)
+        self.msm = resources.MainSettingsModule(os_ver=self.os_ver, name_ui=self.main_settings, obj_win=self)
 
         self.actionMenuMainSettingsWindows()
 
     def actionMenuMainSettingsWindows(self):
+        self.main_settings.checkBox_autologin.clicked.connect(self.msm.clickAutologinCheckBox)
         self.main_settings.checkBox_all.clicked.connect(self.pm.clkCheckbox)
         self.main_settings.pushButton_insprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="install"))
         self.main_settings.pushButton_delprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="remove"))

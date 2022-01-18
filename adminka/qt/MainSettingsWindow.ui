@@ -45,6 +45,9 @@
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="5" column="1">
            <widget class="QLineEdit" name="lineEdit_accesslevel">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="statusTip">
              <string>Уровень доступа к ОС (0 - нименьший, 63 - наивысший)</string>
             </property>
@@ -73,6 +76,9 @@
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_3">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="statusTip">
              <string>Уровень доступа к ОС (0 - нименьший, 63 - наивысший)</string>
             </property>
@@ -83,6 +89,9 @@
           </item>
           <item row="4" column="1">
            <widget class="QComboBox" name="comboBox_nameuser">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="statusTip">
              <string>Имя пользователя для автовхода</string>
             </property>
@@ -90,6 +99,9 @@
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_2">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="statusTip">
              <string>Имя пользователя для автовхода</string>
             </property>
@@ -126,6 +138,9 @@
           </item>
           <item row="3" column="1">
            <widget class="QRadioButton" name="radioButton_netdisable">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="statusTip">
              <string>Отключить аплет сетевых настроек</string>
             </property>
@@ -136,6 +151,9 @@
           </item>
           <item row="3" column="0">
            <widget class="QRadioButton" name="radioButton_netenable">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="statusTip">
              <string>Включить аплет сетевых настроек</string>
             </property>
@@ -169,6 +187,9 @@
        </item>
        <item row="2" column="0">
         <widget class="QPushButton" name="pushButton_apply">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="statusTip">
           <string>Применить отмеченные изменения</string>
          </property>
