@@ -39,13 +39,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gui.setupUi(self, self.width, self.height)
 
         # Создание иконки программы
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(logo))
-        self.setWindowIcon(icon)
+        self.setIcon()
 
         self.show()
         self.winCenter()
         self.actionMainWindow()
+
+    def setIcon(self):
+        # Создание иконки программы
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(logo))
+        self.setWindowIcon(icon)
 
     def actionMainWindow(self):
         self.gui.action_MainSettings.triggered.connect(self.MenuMainSettingsWindows)
@@ -55,6 +59,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def MenuMainSettingsWindows(self):
         print("Выбрано меню Локальная настройка > Основные параметры")
         self.main_settings.setupUi(self, self.width, self.height)
+        self.setIcon()
+
         self.main_settings.frame_1.setEnabled(False)    # Отключаем не задействованные элементы меню.
 
         self.pm = resources.ProgramsModule(os_ver=self.os_ver, name_ui=self.main_settings, obj_win=self)
@@ -72,6 +78,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def MenuRemoteSettingsWindows(self):
         print("Выбрано меню Удалённая настройка > Открыть")
         self.remote_settings.setupUi(self, self.width, self.height)
+        self.setIcon()
         self.actionMenuRemoteSettingsWindows()
 
     def actionMenuRemoteSettingsWindows(self):
