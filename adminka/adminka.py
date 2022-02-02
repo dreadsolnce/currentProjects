@@ -23,8 +23,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.name_debian = ["Ubuntu 21.04", "Ubuntu 21.10"]  # Список поддерживаемых ОС семейства Ubuntu
+        self.name_astra = ['"AstraLinuxSE" 1.6']  # Список поддерживаемы ОС семейства AstraLinux
+
         self.os_ver = resources.OsVersion()  # Версия ОС
+
         self.pm = None  # Объект resources.ProgramsModule
+        self.msm = None  # Объект resources.MainSettingsModule
 
         self.gui = resources.Ui_MainWindow()
         self.main_settings = resources.Ui_MainSettingsWindow()
@@ -33,7 +38,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.width = 809
         self.height = 441
 
+        self.winCenter()
+        self.checkCurrentOs()
         self.mainWin()
+
+    #  Проверка соответствия текущей ОС со списком поддерживаемых ОС
+    def checkCurrentOs(self):
+        if self.os_ver not in self.name_debian + self.name_astra:
+            QMessageBox.critical(self, "Ошибка!", "Не поддерживаемая версия ОС", QMessageBox.Ok)
+            sys.exit()
 
     def mainWin(self):
         self.gui.setupUi(self, self.width, self.height)
@@ -42,9 +55,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setIcon()
 
         self.show()
-        self.winCenter()
         self.actionMainWindow()
 
+    # Создание иконки окна
     def setIcon(self):
         # Создание иконки программы
         icon = QtGui.QIcon()
@@ -61,15 +74,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_settings.setupUi(self, self.width, self.height)
         self.setIcon()
 
-        self.main_settings.frame_3.setEnabled(False)    # Отключаем не задействованные элементы меню.
+        if self.os_ver in self.name_debian:
+            self.main_settings.frame_3.setEnabled(False)    # Отключаем не задействованные элементы меню.
 
-        self.pm = resources.ProgramsModule(os_ver=self.os_ver, name_ui=self.main_settings, obj_win=self)
-        self.msm = resources.MainSettingsModule(os_ver=self.os_ver, name_ui=self.main_settings, obj_win=self)
+        self.pm = resources.ProgramsModule(os_ver=self.os_ver,
+                                           os_debian=self.name_debian, os_astra=self.name_astra,
+                                           name_ui=self.main_settings, obj_win=self)
+        self.msm = resources.MainSettingsModule(os_ver=self.os_ver,
+                                                os_debian=self.name_debian, os_astra=self.name_astra,
+                                                name_ui=self.main_settings, obj_win=self)
 
         self.actionMenuMainSettingsWindows()
 
     def actionMenuMainSettingsWindows(self):
         self.main_settings.checkBox_autologin.clicked.connect(self.msm.clickAutologinCheckBox)
+        self.main_settings.checkBox_networkmanager.clicked.connect(self.msm.clickNetworkManagerCheckBox)
+        self.main_settings.pushButton_apply.clicked.connect(self.msm.clickPushbuttonApply)
         self.main_settings.checkBox_all.clicked.connect(self.pm.clkCheckbox)
         self.main_settings.pushButton_insprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="install"))
         self.main_settings.pushButton_delprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="remove"))

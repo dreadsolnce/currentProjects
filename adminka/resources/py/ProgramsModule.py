@@ -8,10 +8,12 @@ from .Programs import Programs
 
 
 class ProgramsModule(object):
-    def __init__(self, os_ver=None, name_ui=None, obj_win=None):
+    def __init__(self, os_ver=None, os_debian=None, os_astra=None, name_ui=None, obj_win=None):
         super().__init__()
         self.p = None   # Объект Programs
         self.os_ver = os_ver
+        self.os_debian = os_debian
+        self.os_astra = os_astra
         self.obj_win = obj_win
         self.name_ui = name_ui
         self.listPrograms()
@@ -20,7 +22,7 @@ class ProgramsModule(object):
 
     # В зависимости от версии ОС формируем список программ
     def listPrograms(self):
-        self.p = Programs(self.os_ver)  # Инициализируем класс программы
+        self.p = Programs(self.os_ver, self.os_debian, self.os_astra)  # Инициализируем класс программы
         lst_prog = self.p.list_program  # Список программ
         if not lst_prog:
             QMessageBox.critical(self.obj_win, "Ошибка!", "Не поддерживаемая версия ОС", QMessageBox.Ok)

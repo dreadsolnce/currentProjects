@@ -11,6 +11,7 @@ def OsVersion():
     os_ver = action_program(command_1) + " " + action_program(command_2)
     print("Версия ОС: " + os_ver)
     return os_ver
+    # return '"AstraLinuxSE" 1.6'
 
 
 # Функция запуска комманды с выводом результата

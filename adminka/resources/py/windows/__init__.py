@@ -1,0 +1,3 @@
+from .MainWindow import Ui_MainWindow
+from .MainSettingsWindow import Ui_MainSettingsWindow
+from .MainRemoteSettingsWindow import Ui_RemoteSettingsWindow

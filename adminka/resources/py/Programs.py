@@ -28,9 +28,10 @@ else:
 class Programs(QtWidgets.QDialog):
     PATH_CONFIG_BGINFO = sys.path[0] + "/files/bginfo/"
 
-    def __init__(self, os_ver=None):
+    def __init__(self, os_ver=None, os_debian=None, os_astra=None):
         super().__init__()
-        self.name_debian = ["Ubuntu 21.04", "Ubuntu 21.10"]
+        self.name_debian = os_debian
+        self.name_astra = os_astra
         self.os_ver = os_ver  # Версия ОС
         self.list_program = None  # Список программ
         self.dg_gui = None  # Переменная для инициализации окна Debug
@@ -41,7 +42,8 @@ class Programs(QtWidgets.QDialog):
         if self.os_ver in self.name_debian:
             self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git", "cherrytree",
                                  "goodvibes", "draw.io"]
-        elif self.os_ver == '"AstraLinuxSE" 1.6':
+        # elif self.os_ver == '"AstraLinuxSE" 1.6':
+        elif self.os_ver in self.name_astra:
             self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык"]
 
         print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
