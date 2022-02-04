@@ -35,8 +35,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_settings = resources.Ui_MainSettingsWindow()
         self.remote_settings = resources.Ui_RemoteSettingsWindow()
 
-        self.width = 809
-        self.height = 441
+        self.width = 921
+        self.height = 537
 
         self.winCenter()
         self.checkCurrentOs()
@@ -89,6 +89,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def actionMenuMainSettingsWindows(self):
         self.main_settings.checkBox_autologin.clicked.connect(self.msm.clickAutologinCheckBox)
         self.main_settings.checkBox_networkmanager.clicked.connect(self.msm.clickNetworkManagerCheckBox)
+        self.main_settings.checkBox_root.clicked.connect(self.msm.clickSetRootUser)
         self.main_settings.pushButton_apply.clicked.connect(self.msm.clickPushbuttonApply)
         self.main_settings.checkBox_all.clicked.connect(self.pm.clkCheckbox)
         self.main_settings.pushButton_insprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="install"))
