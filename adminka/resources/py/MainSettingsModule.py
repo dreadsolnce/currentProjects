@@ -3,6 +3,8 @@
 
 import os
 import subprocess
+from PyQt5 import QtGui
+from PyQt5.Qt import Qt
 from PyQt5.QtWidgets import QMessageBox
 
 
@@ -58,6 +60,7 @@ def changeFile(file=None, template=None, new_str=None):
     file_tmp = "/tmp/temp.tmp"
     with open(file_tmp, 'w') as ft:
         with open(file, 'r') as f:
+            # ex = False
             for line in f:
                 ex = False
                 list_line = list(line.split())
@@ -86,12 +89,27 @@ def changeFileAstra(file=None, template=None, new_str=None):
     return out, err
 
 
-def copyFile(file_src=None, file_bak=None):
+def copyFile(file_src=None, file_bak=None, copying_reverse=False):
     out, err = None, None
-    if not os.path.isfile(file_bak):
-        process = subprocess.Popen("sudo cp {} {}".format(file_src, file_bak), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if copying_reverse is True:
+        # if not os.path.isfile(file_bak):
+        #     err = "NotFileBak"
+        # else:
+        process = subprocess.Popen("sudo cp {} {}".format(file_bak, file_src), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
+    else:
+        if not os.path.isfile(file_bak):
+            process = subprocess.Popen("sudo cp {} {}".format(file_src, file_bak), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = process.communicate()
     return out, err
+
+
+def findTemplateFile(file=None, template=None):
+    with open(file, 'r') as f:
+        for line in f:
+            if " ".join(line.split()) == template:
+                return True
+    return False
 
 
 class MainSettingsModule(object):
@@ -106,6 +124,7 @@ class MainSettingsModule(object):
         self.currentUserAutologin()
         self.currentStateNetworkManager()
         self.currentStateSuperUser()
+        self.currentStateSSH()
 
     def clickAutologinCheckBox(self):
         bool_state = False
@@ -141,6 +160,7 @@ class MainSettingsModule(object):
 
         self.name_ui.radioButton_netdisable.setEnabled(bool_state)
         self.name_ui.radioButton_netenable.setEnabled(bool_state)
+        self.name_ui.label_networkmanager.setDisabled(bool_state)
 
         self.stateApplyPushButton()
         self.currentStateNetworkManager()
@@ -157,13 +177,29 @@ class MainSettingsModule(object):
         self.name_ui.label_root_pass_confirm.setEnabled(bool_state)
         self.name_ui.lineEdit_pass_confirm.setEnabled(bool_state)
         self.name_ui.plainTextEdit_root.setEnabled(bool_state)
+        self.name_ui.label_root_state.setDisabled(bool_state)
+
+        self.stateApplyPushButton()
+
+    def clickSetSSH(self):
+        bool_state = False
+        if self.name_ui.checkBox_ssh.isChecked():
+            bool_state = True
+        elif not self.name_ui.checkBox_ssh.isChecked():
+            bool_state = False
+
+        self.name_ui.radioButton_ssh_disable.setEnabled(bool_state)
+        self.name_ui.radioButton_ssh_enable.setEnabled(bool_state)
+        self.name_ui.label_ssh_state.setDisabled(bool_state)
 
         self.stateApplyPushButton()
 
     def stateApplyPushButton(self):
-        if self.name_ui.checkBox_networkmanager.isChecked() or self.name_ui.checkBox_autologin.isChecked() or self.name_ui.checkBox_root.isChecked():
+        if self.name_ui.checkBox_networkmanager.isChecked() or self.name_ui.checkBox_autologin.isChecked() \
+                or self.name_ui.checkBox_root.isChecked() or self.name_ui.checkBox_ssh.isChecked():
             self.name_ui.pushButton_apply.setEnabled(True)
-        elif not self.name_ui.checkBox_networkmanager.isChecked() and not self.name_ui.checkBox_autologin.isChecked() and not self.name_ui.checkBox_root.isChecked():
+        elif not self.name_ui.checkBox_networkmanager.isChecked() and not self.name_ui.checkBox_autologin.isChecked() \
+                and not self.name_ui.checkBox_root.isChecked() and not self.name_ui.checkBox_ssh.isChecked():
             self.name_ui.pushButton_apply.setEnabled(False)
 
     # Добавляем пользователей в combobox
@@ -193,25 +229,29 @@ class MainSettingsModule(object):
     def currentUserAutologin(self):
         # Если текущвая ОС принадлежит астре
         if self.os_ver in self.os_astra:
-            state_autologin = stateAutoLoginAstra("/etc/X11/fly-dm/fly-dmrc", "AutoLoginEnable")
+            state_autologin, name_user_login = stateAutoLoginAstra("/etc/X11/fly-dm/fly-dmrc", "AutoLoginEnable")
             if not state_autologin:
                 self.name_ui.label_autologin.setText('Статус: \tВыключен')
+                self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: Tomato }")
             else:
                 state_user_login, name_user_login = stateAutoLoginAstra("/etc/X11/fly-dm/fly-dmrc", "AutoLoginUser")
                 if state_user_login:
-                    name_user = name_user_login
+                    name_user = name_user_login.strip()
                     self.name_ui.label_autologin.setText('Статус: \tВключён. Пользователь {}'.format(name_user))
+                    self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: lightgreen }")
 
         # Если текущвая ОС принадлежит ubuntu, то определяем статус автозагрузки применяя соответствующие функции: stateAutoLogin и userAutoLogin
         elif self.os_ver in self.os_debian:
-            state_autologin = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLoginEnable")
+            state_autologin, name_user_login = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLoginEnable")
             if not state_autologin:
                 self.name_ui.label_autologin.setText('Статус: \tВыключен')
+                self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: Tomato }")
             else:
                 state_user_login, name_user = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLogin")
                 if state_user_login:
                     # name_user = userAutoLogin("/etc/gdm3/custom.conf", "AutomaticLogin")
                     self.name_ui.label_autologin.setText('Статус: \tВключён. Пользователь {}'.format(name_user))
+                    self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: lightgreen }")
 
     def currentStateNetworkManager(self):
         if self.os_ver in self.os_astra:
@@ -219,15 +259,34 @@ class MainSettingsModule(object):
             print(out.decode("utf-8").strip())
             if out.decode("utf-8").strip() == "inactive":
                 self.name_ui.label_networkmanager.setText("Статус: \tВыключен")
+                self.name_ui.label_networkmanager.setStyleSheet("QLabel { background-color: lightgreen }")
             elif out.decode("utf-8").strip() == "active":
                 self.name_ui.label_networkmanager.setText("Статус: \tВключен")
+                self.name_ui.label_networkmanager.setStyleSheet("QLabel { background-color: Tomato }")
 
     def currentStateSuperUser(self):
         out, err = runProcess("sudo cat /etc/shadow | grep root | awk -F: '{print $2}'")
         if out.decode("utf-8").strip() == "!" or out.decode("utf-8").strip() == "*":
             self.name_ui.label_root_state.setText("Статус: \tНе настроен")
+            self.name_ui.label_root_state.setStyleSheet("QLabel { background-color: Tomato }")
         else:
             self.name_ui.label_root_state.setText("Статус: \tНастроен")
+            self.name_ui.label_root_state.setStyleSheet("QLabel { background-color: lightgreen }")
+
+    def currentStateSSH(self):
+        state = findTemplateFile("/etc/ssh/ssh_config", "ForwardX11 yes")
+        if state:
+            state = findTemplateFile("/etc/ssh/sshd_config", "PermitRootLogin yes")
+            if state:
+                state = findTemplateFile("/etc/ssh/sshd_config", "AddressFamily inet")
+                if state:
+                    state = findTemplateFile("/etc/ssh/sshd_config", "X11UseLocalhost yes")
+        if state:
+            self.name_ui.label_ssh_state.setText("Статус: \tНастроен")
+            self.name_ui.label_ssh_state.setStyleSheet("QLabel { background-color: lightgreen }")
+        elif not state:
+            self.name_ui.label_ssh_state.setText("Статус: \tНе настроен")
+            self.name_ui.label_ssh_state.setStyleSheet("QLabel { background-color: Tomato }")
 
     def clickPushbuttonApply(self):
         print("Нажата кнопка применить...")
@@ -250,14 +309,22 @@ class MainSettingsModule(object):
                 self.__applyNetworkManager(action="Enable")
             elif self.os_ver in self.os_astra and self.name_ui.radioButton_netdisable.isChecked():
                 self.__applyNetworkManager(action="Disabled")
+            self.currentStateNetworkManager()
         if self.name_ui.checkBox_root.isChecked() and len(self.name_ui.lineEdit_pass.text()) != 0:
             if self.name_ui.lineEdit_pass.text() == self.name_ui.lineEdit_pass_confirm.text():
                 if self.os_ver in self.os_astra:
                     self.__applySuperUser(os_ver="Astra")
                 elif self.os_ver in self.os_debian:
                     self.__applySuperUser()
+                self.currentStateSuperUser()
             else:
                 QMessageBox.critical(self.obj_win, "Ошибка!", "Пароли введенные для суперпользоватея не совпадают!", QMessageBox.Ok)
+        if self.name_ui.checkBox_ssh.isChecked():
+            if self.name_ui.radioButton_ssh_enable.isChecked():
+                self.__applySSH(action="Enable")
+            elif self.name_ui.radioButton_ssh_disable.isChecked():
+                self.__applySSH(action="Restore")
+            self.currentStateSSH()
 
     def __applyAutologinDebian(self, action=None, cur_user=None):
         # Вкючаем автозагрузку
@@ -381,3 +448,44 @@ class MainSettingsModule(object):
             QMessageBox.information(self.obj_win, "Сообщение!", "Настройка пользователя root успех!")
         else:
             QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка настройки пользователя root!")
+
+    def __applySSH(self, action=None):
+        if action == "Enable":
+            copyFile("/etc/ssh/ssh_config", "/etc/ssh/ssh_config.PNOSKO.bak")
+            copyFile("/etc/ssh/sshd_config", "/etc/ssh/sshd_config.PNOSKO.bak")
+
+            out, err = changeFile("/etc/ssh/ssh_config", "ForwardX11", "ForwardX11 yes")
+            if err:
+                QMessageBox.critical(self.obj_win, "Ошибка SSH!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
+            else:
+                out, err = changeFileAstra("/etc/ssh/sshd_config", "PermitRootLogin", "PermitRootLogin yes")
+                if err:
+                    QMessageBox.critical(self.obj_win, "Ошибка SSH!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
+                else:
+                    out, err = changeFileAstra("/etc/ssh/sshd_config", "AddressFamily", "AddressFamily inet")
+                    if err:
+                        QMessageBox.critical(self.obj_win, "Ошибка SSH!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
+                    else:
+                        out, err = changeFileAstra("/etc/ssh/sshd_config", "X11UseLocalhost", "X11UseLocalhost yes")
+                        if err:
+                            QMessageBox.critical(self.obj_win, "Ошибка SSH!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
+                        else:
+                            return_code = runProcess("sudo systemctl start ssh", returncode=True)
+                            if return_code != 0:
+                                QMessageBox.critical(self.obj_win, "Ошибка SSH!", "Ошибка запукска службы ssh!", QMessageBox.Ok)
+                            else:
+                                return_code = runProcess("sudo systemctl enable ssh", returncode=True)
+                                if return_code != 0:
+                                    QMessageBox.critical(self.obj_win, "Ошибка SSH!", "Ошибка добавления службы ssh в автозагрузку!", QMessageBox.Ok)
+                                else:
+                                    QMessageBox.information(self.obj_win, "Информация!", "Настройка SSH выолнена успешно!")
+        elif action == "Restore":
+            out, err = copyFile("/etc/ssh/ssh_config.", "/etc/ssh/ssh_config.PNOSKO.bak", copying_reverse=True)
+            if err:
+                QMessageBox.critical(self.obj_win, "Ошибка!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
+            else:
+                out, err = copyFile("/etc/ssh/sshd_config", "/etc/ssh/sshd_config.PNOSKO.bak", copying_reverse=True)
+                if err:
+                    QMessageBox.critical(self.obj_win, "Ошибка!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
+                else:
+                    QMessageBox.information(self.obj_win, "Успех!", "Настройки SSH успешно востановлены из резервной копии!", QMessageBox.Ok)

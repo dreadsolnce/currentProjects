@@ -90,11 +90,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_settings.checkBox_autologin.clicked.connect(self.msm.clickAutologinCheckBox)
         self.main_settings.checkBox_networkmanager.clicked.connect(self.msm.clickNetworkManagerCheckBox)
         self.main_settings.checkBox_root.clicked.connect(self.msm.clickSetRootUser)
+        self.main_settings.checkBox_ssh.clicked.connect(self.msm.clickSetSSH)
         self.main_settings.pushButton_apply.clicked.connect(self.msm.clickPushbuttonApply)
         self.main_settings.checkBox_all.clicked.connect(self.pm.clkCheckbox)
         self.main_settings.pushButton_insprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="install"))
         self.main_settings.pushButton_delprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="remove"))
         self.main_settings.action_Exit.triggered.connect(lambda: sys.exit())
+
+        # self.main_settings.label_autologin.setFont(QtGui.QBrush(Qt.darkGreen)
 
         self.main_settings.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
 
