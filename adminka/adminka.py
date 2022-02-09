@@ -35,12 +35,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_settings = resources.Ui_MainSettingsWindow()
         self.remote_settings = resources.Ui_RemoteSettingsWindow()
 
-        self.width = 921
-        self.height = 537
+        self.width = 1300
+        self.height = 600
 
-        self.winCenter()
         self.checkCurrentOs()
         self.mainWin()
+        self.winCenter()
 
     #  Проверка соответствия текущей ОС со списком поддерживаемых ОС
     def checkCurrentOs(self):
@@ -76,6 +76,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if self.os_ver in self.name_debian:
             self.main_settings.frame_3.setEnabled(False)    # Отключаем не задействованные элементы меню.
+            # self.main_settings.frame_remote_session.setEnabled(False)
 
         self.pm = resources.ProgramsModule(os_ver=self.os_ver,
                                            os_debian=self.name_debian, os_astra=self.name_astra,
@@ -91,6 +92,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_settings.checkBox_networkmanager.clicked.connect(self.msm.clickNetworkManagerCheckBox)
         self.main_settings.checkBox_root.clicked.connect(self.msm.clickSetRootUser)
         self.main_settings.checkBox_ssh.clicked.connect(self.msm.clickSetSSH)
+        self.main_settings.checkBox_time.clicked.connect(self.msm.clickSetTimeMode)
+        self.main_settings.checkBox_remote_session.clicked.connect(self.msm.clickSetRemoteSession)
         self.main_settings.pushButton_apply.clicked.connect(self.msm.clickPushbuttonApply)
         self.main_settings.checkBox_all.clicked.connect(self.pm.clkCheckbox)
         self.main_settings.pushButton_insprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="install"))

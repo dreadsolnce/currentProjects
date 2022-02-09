@@ -3,8 +3,6 @@
 
 import os
 import subprocess
-from PyQt5 import QtGui
-from PyQt5.Qt import Qt
 from PyQt5.QtWidgets import QMessageBox
 
 
@@ -89,6 +87,19 @@ def changeFileAstra(file=None, template=None, new_str=None):
     return out, err
 
 
+def changeFileNew(file=None, template=None, new_str=None):
+    file_tmp = "/tmp/temp.tmp"
+    with open(file_tmp, 'w') as ft:
+        with open(file, 'r') as f:
+            for line in f:
+                if " ".join(line.split()) == " ".join(template.split()):
+                    ft.writelines(new_str + '\n')
+                else:
+                    ft.writelines(line)
+    out, err = runProcess("sudo cp {} {}".format(file_tmp, file))
+    return out, err
+
+
 def copyFile(file_src=None, file_bak=None, copying_reverse=False):
     out, err = None, None
     if copying_reverse is True:
@@ -107,7 +118,7 @@ def copyFile(file_src=None, file_bak=None, copying_reverse=False):
 def findTemplateFile(file=None, template=None):
     with open(file, 'r') as f:
         for line in f:
-            if " ".join(line.split()) == template:
+            if " ".join(line.split()) == " ".join(template.split()):
                 return True
     return False
 
@@ -125,6 +136,8 @@ class MainSettingsModule(object):
         self.currentStateNetworkManager()
         self.currentStateSuperUser()
         self.currentStateSSH()
+        self.currentStateTime()
+        self.currentStateRemoteSession()
 
     def clickAutologinCheckBox(self):
         bool_state = False
@@ -194,12 +207,40 @@ class MainSettingsModule(object):
 
         self.stateApplyPushButton()
 
+    def clickSetTimeMode(self):
+        bool_state = False
+        if self.name_ui.checkBox_time.isChecked():
+            bool_state = True
+        elif not self.name_ui.checkBox_time.isChecked():
+            bool_state = False
+
+        self.name_ui.radioButton_utc.setEnabled(bool_state)
+        self.name_ui.radioButton_localtime.setEnabled(bool_state)
+        self.name_ui.label_time_state.setDisabled(bool_state)
+
+        self.stateApplyPushButton()
+
+    def clickSetRemoteSession(self):
+        bool_state = False
+        if self.name_ui.checkBox_remote_session.isChecked():
+            bool_state = True
+        elif not self.name_ui.checkBox_remote_session.isChecked():
+            bool_state = False
+
+        self.name_ui.radioButton_remote_enable.setEnabled(bool_state)
+        self.name_ui.radioButton_remote_disable.setEnabled(bool_state)
+        self.name_ui.label_remote_session_2.setDisabled(bool_state)
+
+        self.stateApplyPushButton()
+
     def stateApplyPushButton(self):
         if self.name_ui.checkBox_networkmanager.isChecked() or self.name_ui.checkBox_autologin.isChecked() \
-                or self.name_ui.checkBox_root.isChecked() or self.name_ui.checkBox_ssh.isChecked():
+                or self.name_ui.checkBox_root.isChecked() or self.name_ui.checkBox_ssh.isChecked() \
+                or self.name_ui.checkBox_time.isChecked() or self.name_ui.checkBox_remote_session.isChecked():
             self.name_ui.pushButton_apply.setEnabled(True)
         elif not self.name_ui.checkBox_networkmanager.isChecked() and not self.name_ui.checkBox_autologin.isChecked() \
-                and not self.name_ui.checkBox_root.isChecked() and not self.name_ui.checkBox_ssh.isChecked():
+                and not self.name_ui.checkBox_root.isChecked() and not self.name_ui.checkBox_ssh.isChecked() \
+                and not self.name_ui.checkBox_time.isChecked() and not self.name_ui.checkBox_remote_session.isChecked():
             self.name_ui.pushButton_apply.setEnabled(False)
 
     # Добавляем пользователей в combobox
@@ -288,6 +329,27 @@ class MainSettingsModule(object):
             self.name_ui.label_ssh_state.setText("Статус: \tНе настроен")
             self.name_ui.label_ssh_state.setStyleSheet("QLabel { background-color: Tomato }")
 
+    def currentStateTime(self):
+        out, err = runProcess("timedatectl | grep local | grep TZ | awk -F: '{print $2}'")
+        if out[1:41].strip().decode('utf-8') == "yes":
+            self.name_ui.label_time_state.setText("Статус: \tLOCALTIME")
+            self.name_ui.label_time_state.setStyleSheet("QLabel { background-color: lightgreen }")
+        elif out[1:41].strip().decode('utf-8') == "no":
+            self.name_ui.label_time_state.setText("Статус: \tUTC")
+            self.name_ui.label_time_state.setStyleSheet("QLabel { background-color: Tomato }")
+
+    def currentStateRemoteSession(self):
+        if os.path.isfile('/etc/X11/fly-dm/Xaccess'):
+            state = findTemplateFile("/etc/X11/fly-dm/Xaccess", "localhost #any host can get a login window")
+            if state:
+                state = findTemplateFile("/etc/X11/fly-dm/Xaccess", "localhost    CHOOSER BROADCAST	#any indirect host can get a chooser")
+            if state:
+                self.name_ui.label_remote_session_2.setText("Статус: \tВыключен")
+                self.name_ui.label_remote_session_2.setStyleSheet("QLabel { background-color: Tomato }")
+            elif not state:
+                self.name_ui.label_remote_session_2.setText("Статус: \tВключен")
+                self.name_ui.label_remote_session_2.setStyleSheet("QLabel { background-color: lightgreen }")
+
     def clickPushbuttonApply(self):
         print("Нажата кнопка применить...")
         cur_user = self.name_ui.comboBox_nameuser.currentText()
@@ -321,10 +383,22 @@ class MainSettingsModule(object):
                 QMessageBox.critical(self.obj_win, "Ошибка!", "Пароли введенные для суперпользоватея не совпадают!", QMessageBox.Ok)
         if self.name_ui.checkBox_ssh.isChecked():
             if self.name_ui.radioButton_ssh_enable.isChecked():
-                self.__applySSH(action="Enable")
+                self.__applySSH(action="enable")
             elif self.name_ui.radioButton_ssh_disable.isChecked():
-                self.__applySSH(action="Restore")
+                self.__applySSH(action="restore")
             self.currentStateSSH()
+        if self.name_ui.checkBox_time.isChecked():
+            if self.name_ui.radioButton_localtime.isChecked():
+                self.__applySetTime(action="localtime")
+            elif self.name_ui.radioButton_utc.isChecked():
+                self.__applySetTime(action="utc")
+            self.currentStateTime()
+        if self.name_ui.checkBox_remote_session.isChecked():
+            if self.name_ui.radioButton_remote_enable.isChecked():
+                self.__appleSetRemoteSession(action="enable")
+            elif self.name_ui.radioButton_remote_disable.isChecked():
+                self.__appleSetRemoteSession(action="disable")
+            self.currentStateRemoteSession()
 
     def __applyAutologinDebian(self, action=None, cur_user=None):
         # Вкючаем автозагрузку
@@ -450,7 +524,7 @@ class MainSettingsModule(object):
             QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка настройки пользователя root!")
 
     def __applySSH(self, action=None):
-        if action == "Enable":
+        if action == "enable":
             copyFile("/etc/ssh/ssh_config", "/etc/ssh/ssh_config.PNOSKO.bak")
             copyFile("/etc/ssh/sshd_config", "/etc/ssh/sshd_config.PNOSKO.bak")
 
@@ -479,7 +553,7 @@ class MainSettingsModule(object):
                                     QMessageBox.critical(self.obj_win, "Ошибка SSH!", "Ошибка добавления службы ssh в автозагрузку!", QMessageBox.Ok)
                                 else:
                                     QMessageBox.information(self.obj_win, "Информация!", "Настройка SSH выолнена успешно!")
-        elif action == "Restore":
+        elif action == "restore":
             out, err = copyFile("/etc/ssh/ssh_config.", "/etc/ssh/ssh_config.PNOSKO.bak", copying_reverse=True)
             if err:
                 QMessageBox.critical(self.obj_win, "Ошибка!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
@@ -489,3 +563,41 @@ class MainSettingsModule(object):
                     QMessageBox.critical(self.obj_win, "Ошибка!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
                 else:
                     QMessageBox.information(self.obj_win, "Успех!", "Настройки SSH успешно востановлены из резервной копии!", QMessageBox.Ok)
+
+    def __applySetTime(self, action=None):
+        returncode = None
+        if action == "localtime":
+            returncode = runProcess("sudo timedatectl set-local-rtc 1 --adjust-system-clock", returncode=True)
+        elif action == "utc":
+            returncode = runProcess("sudo timedatectl set-local-rtc 0 --adjust-system-clock", returncode=True)
+        if returncode == 0:
+            QMessageBox.information(self.obj_win, "Информация!", "Настройка формата времени выполнена успешно!")
+        else:
+            QMessageBox.critical(self.obj_win, "Ошибка настройки времени!", "Ошибка настройки формата времени!", QMessageBox.Ok)
+
+    def __appleSetRemoteSession(self, action=None):
+        str_template_1 = None
+        str_template_2 = None
+        str_new_1 = None
+        str_new_2 = None
+        if action == "enable":
+            str_template_1 = "localhost #any host can get a login window"
+            str_new_1 = "* #any host can get a login window"
+            str_template_2 = "localhost CHOOSER BROADCAST #any indirect host can get a chooser"
+            str_new_2 = "* CHOOSER BROADCAST #any indirect host can get a chooser"
+            copyFile("/etc/X11/fly-dm/Xaccess", "/etc/X11/fly-dm/Xaccess.PNOSKO.bak")
+        elif action == "disable":
+            str_template_1 = "* #any host can get a login window"
+            str_new_1 = "localhost #any host can get a login window"
+            str_template_2 = "* CHOOSER BROADCAST #any indirect host can get a chooser"
+            str_new_2 = "localhost CHOOSER BROADCAST #any indirect host can get a chooser"
+
+        out, err = changeFileNew("/etc/X11/fly-dm/Xaccess", str_template_1, str_new_1)
+        if err:
+            QMessageBox.critical(self.obj_win, "Ошибка!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
+        else:
+            out, err = changeFileNew("/etc/X11/fly-dm/Xaccess", str_template_2, str_new_2)
+            if err:
+                QMessageBox.critical(self.obj_win, "Ошибка!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
+            else:
+                QMessageBox.information(self.obj_win, "Успех!", "{}".format("Настройка пункта меню выхода 'Удалённая сесиия' выполнена успешно!"), QMessageBox.Ok)
