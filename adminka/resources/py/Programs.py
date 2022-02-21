@@ -41,10 +41,10 @@ class Programs(QtWidgets.QDialog):
     def listProgram(self):
         if self.os_ver in self.name_debian:
             self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git", "cherrytree",
-                                 "goodvibes", "draw.io"]
+                                 "goodvibes", "draw.io", "qemu"]
         # elif self.os_ver == '"AstraLinuxSE" 1.6':
         elif self.os_ver in self.name_astra:
-            self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык"]
+            self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык", "qemu"]
 
         print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
@@ -63,6 +63,8 @@ class Programs(QtWidgets.QDialog):
         command_vnc5viewer = "dpkg --list | grep realvnc-vnc-viewer | awk '{print $3}' | grep '5.3.3' >/dev/null; echo $?"
         # Команда для ярлыков программы vnc
         command_vnc_desktop = "ls -al ~/Desktop/ | grep _SSH.desktop | grep VNC >/dev/null; echo $?"
+        # Команда для qemu
+        command_qemu = "dpkg-query -L qemu-system-x86 >/dev/null; echo $?"
 
         for name in self.list_program:  # Перебираем весь список доступных программ
             if name == "игры":
@@ -77,17 +79,19 @@ class Programs(QtWidgets.QDialog):
                 command = command_vnc5viewer
             elif name == "vnc ярлык":
                 command = command_vnc_desktop
+            elif name == "qemu":
+                command = command_qemu
             else:
                 command = "dpkg --list | grep " + name + " | awk '{print $2}' | grep -E ^" + name + "$ >/dev/null; echo $?"
 
-            out = runCommandReturnStateProg(command)    # Код состояния программы
+            out = runCommandReturnStateProg(command)  # Код состояния программы
 
-            state_program[name] = out   # Формируем словарь из имени программы и ключа состояния программы
+            state_program[name] = out  # Формируем словарь из имени программы и ключа состояния программы
             # if not out:
             #     print("Программа {} : установлена".format(name))
             # elif out:
             #     print("Программа {} : не установлена".format(name))
-        return state_program    # Возвращаем словарь, т.к. данная функция вызывается из внешнего класса
+        return state_program  # Возвращаем словарь, т.к. данная функция вызывается из внешнего класса
 
     # Запуск установки либо удаления программы в зависимости от версии ОС
     def actionProg(self, os_ver=None, action=None, lst_name_prog=None):
@@ -116,6 +120,8 @@ class Programs(QtWidgets.QDialog):
                 elif name == "mc":
                     command_2 = " ; sudo rm -rf /usr/share/applications/mcedit.desktop"
                     command = "sudo apt-get install {} -y".format(name) + command_2
+                elif name == "qemu":
+                    command = "sudo apt-get install qemu-system-x86"
                 else:
                     if name == "игры":
                         name = "aisleriot gnome-mahjongg gnome-mines gnome-sudoku"
@@ -129,6 +135,8 @@ class Programs(QtWidgets.QDialog):
                 else:
                     if name == "pyqt5-dev-tools":
                         name = "qtcreator pyqt5-dev-tools qttools5-dev-tools"
+                    elif name == "qemu":
+                        name = "qemu-system-x86"
                     elif name == "игры":
                         name = "aisleriot gnome-mahjongg gnome-mines gnome-sudoku"
                     command = "sudo apt-get purge {} -y".format(name)
@@ -220,6 +228,16 @@ class Programs(QtWidgets.QDialog):
                 elif action == "remove":
                     proc_th = SetupVncDesktop(action=action)
 
+                proc_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                proc_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                proc_th.start()
+                while proc_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                proc_th.quit()
+            if name == "qemu":
+                proc_th = SetupQemu(action=action)
                 proc_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
                 proc_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
                 proc_th.start()
@@ -1068,6 +1086,70 @@ class SetupDiagramNet(QtCore.QThread):
         process.communicate()
         self.exit_code = self.exit_code + process.returncode
         sleep(0.2)
+
+
+class SetupQemu(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(float)
+
+    def __init__(self, action=None):
+        super().__init__()
+        self.libs = ["libibverbs1", "ibverbs-providers", "ipxe-qemu", "libaio1", "libbrlapi0.6", "libcacard0", "libcapstone4", "libpmem1", "librdmacm1", "libslirp0", "libspice-server1", "libusbredirparser1", "libvdeplug2", "libvirglrenderer0", "ovmf", "seabios", "qemu-utils", "libfdt1", "qemu-system-common", "qemu-system-data", "qemu-system-x86"]
+        self.action = action
+        self.count = 0
+        self.exit_code = 0
+
+    def run(self):
+        if self.action == "install":
+            print("Установка пакета qemu")
+            self.insQemu()
+        elif self.action == "remove":
+            print("Удаление пакета qemu")
+            self.delQemu()
+
+    def delQemu(self):
+        text = None
+        command = "sudo apt-get purge qemu-system-x86 qemu-system-data qemu-system-common qemu-utils -y"
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        line_out = True
+        while line_out:
+            line_out = process.stdout.readline()
+            self.new_log.emit(line_out.decode('utf-8', 'ignore'))
+            self.progress.emit(self.count)
+            self.count += 2
+            sleep(0.01)
+        process.communicate()
+        self.exit_code = self.exit_code + process.returncode
+        sleep(0.2)
+        if not self.exit_code:
+            text = "Удаление программы qemu-system-x86 выполнено УСПЕШНО!\n"
+        elif self.exit_code:
+            text = "Непредвиденная ОШИБКА!\n"
+        self.new_log.emit(text)
+        self.progress.emit(100)
+
+    def insQemu(self):
+        text = None
+        for i in self.libs:
+            full_path_lib = sys.path[0] + "'/files/lib/qemu/" + i + "'*"
+            command = "sudo dpkg -i {}".format(full_path_lib)
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            line_out = True
+            while line_out:
+                line_out = process.stdout.readline()
+                self.new_log.emit(line_out.decode('utf-8', 'ignore'))
+                self.progress.emit(self.count)
+                self.count += 0.5
+                sleep(0.01)
+            process.communicate()
+            self.exit_code = self.exit_code + process.returncode
+            sleep(0.2)
+        if not self.exit_code:
+            text = "Установка программы qemu-system-x86 выполнено УСПЕШНО!\n"
+        elif self.exit_code:
+            text = "Непредвиденная ОШИБКА!\n"
+        self.new_log.emit(text)
+        self.progress.emit(100)
 
 
 # Запуск команды с выводом данных выполнения

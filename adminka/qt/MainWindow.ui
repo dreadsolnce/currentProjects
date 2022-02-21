@@ -45,6 +45,8 @@
      <string>Локальная настройка</string>
     </property>
     <addaction name="action_MainSettings"/>
+    <addaction name="action_ChangeSettings"/>
+    <addaction name="action_PXE"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -77,7 +79,7 @@
     <string>Основные параметры</string>
    </property>
    <property name="statusTip">
-    <string>Изменений основных настроек ОС. Установка и удаление программ</string>
+    <string>Включает в себя настройку основных (общих) параметров системы</string>
    </property>
   </action>
   <action name="action_OpenRemoteSettings">
@@ -86,6 +88,22 @@
    </property>
    <property name="statusTip">
     <string>Настройка удаленных машин</string>
+   </property>
+  </action>
+  <action name="action_ChangeSettings">
+   <property name="text">
+    <string>Настраиваемые параметры ОС</string>
+   </property>
+   <property name="statusTip">
+    <string>Включает в себя настройку индивидуальных параметров системы таких как имя компьютера, сетевые настройки и т.д.</string>
+   </property>
+  </action>
+  <action name="action_PXE">
+   <property name="text">
+    <string>Настройка PXE сервера</string>
+   </property>
+   <property name="statusTip">
+    <string>Установка и настройка PXE сервера</string>
    </property>
   </action>
  </widget>

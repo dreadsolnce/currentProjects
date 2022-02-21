@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainWindow.ui'
+# Form implementation generated from reading ui file 'adminka/qt/MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -12,12 +12,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
-    def setupUi(self, MainWindow, width=809, height=441):
+    def setupUi(self, MainWindow, width=921, height=537):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(width, height)
         MainWindow.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../resources/ico/logo.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("adminka/qt/../resources/ico/logo.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -43,7 +43,13 @@ class Ui_MainWindow(object):
         self.action_MainSettings.setObjectName("action_MainSettings")
         self.action_OpenRemoteSettings = QtWidgets.QAction(MainWindow)
         self.action_OpenRemoteSettings.setObjectName("action_OpenRemoteSettings")
+        self.action_ChangeSettings = QtWidgets.QAction(MainWindow)
+        self.action_ChangeSettings.setObjectName("action_ChangeSettings")
+        self.action_PXE = QtWidgets.QAction(MainWindow)
+        self.action_PXE.setObjectName("action_PXE")
         self.menu_LocalSettings.addAction(self.action_MainSettings)
+        self.menu_LocalSettings.addAction(self.action_ChangeSettings)
+        self.menu_LocalSettings.addAction(self.action_PXE)
         self.menu_LocalSettings.addSeparator()
         self.menu_LocalSettings.addAction(self.action_Exit)
         self.menu_RemoteSettings.addAction(self.action_OpenRemoteSettings)
@@ -64,6 +70,10 @@ class Ui_MainWindow(object):
         self.action_Exit.setText(_translate("MainWindow", "Выход"))
         self.action_Exit.setStatusTip(_translate("MainWindow", "Выход из программы"))
         self.action_MainSettings.setText(_translate("MainWindow", "Основные параметры"))
-        self.action_MainSettings.setStatusTip(_translate("MainWindow", "Изменений основных настроек ОС. Установка и удаление программ"))
+        self.action_MainSettings.setStatusTip(_translate("MainWindow", "Включает в себя настройку основных (общих) параметров системы"))
         self.action_OpenRemoteSettings.setText(_translate("MainWindow", "Открыть"))
         self.action_OpenRemoteSettings.setStatusTip(_translate("MainWindow", "Настройка удаленных машин"))
+        self.action_ChangeSettings.setText(_translate("MainWindow", "Настраиваемые параметры ОС"))
+        self.action_ChangeSettings.setStatusTip(_translate("MainWindow", "Включает в себя настройку индивидуальных параметров системы таких как имя компьютера, сетевые настройки и т.д."))
+        self.action_PXE.setText(_translate("MainWindow", "Настройка PXE сервера"))
+        self.action_PXE.setStatusTip(_translate("MainWindow", "Установка и настройка PXE сервера"))

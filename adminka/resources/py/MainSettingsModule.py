@@ -138,6 +138,7 @@ class MainSettingsModule(object):
         self.currentStateSSH()
         self.currentStateTime()
         self.currentStateRemoteSession()
+        self.currentStateResolv()
 
     def clickAutologinCheckBox(self):
         bool_state = False
@@ -233,14 +234,28 @@ class MainSettingsModule(object):
 
         self.stateApplyPushButton()
 
+    def clickSetResolv(self):
+        bool_state = False
+        if self.name_ui.checkBox_resolv.isChecked():
+            bool_state = True
+        elif not self.name_ui.checkBox_resolv.isChecked():
+            bool_state = False
+
+        self.name_ui.radioButton_resolv.setEnabled(bool_state)
+        self.name_ui.label_resolv_state.setDisabled(bool_state)
+
+        self.stateApplyPushButton()
+
     def stateApplyPushButton(self):
         if self.name_ui.checkBox_networkmanager.isChecked() or self.name_ui.checkBox_autologin.isChecked() \
                 or self.name_ui.checkBox_root.isChecked() or self.name_ui.checkBox_ssh.isChecked() \
-                or self.name_ui.checkBox_time.isChecked() or self.name_ui.checkBox_remote_session.isChecked():
+                or self.name_ui.checkBox_time.isChecked() or self.name_ui.checkBox_remote_session.isChecked()\
+                or self.name_ui.checkBox_resolv.isChecked():
             self.name_ui.pushButton_apply.setEnabled(True)
         elif not self.name_ui.checkBox_networkmanager.isChecked() and not self.name_ui.checkBox_autologin.isChecked() \
                 and not self.name_ui.checkBox_root.isChecked() and not self.name_ui.checkBox_ssh.isChecked() \
-                and not self.name_ui.checkBox_time.isChecked() and not self.name_ui.checkBox_remote_session.isChecked():
+                and not self.name_ui.checkBox_time.isChecked() and not self.name_ui.checkBox_remote_session.isChecked()\
+                and not self.name_ui.checkBox_resolv.isChecked():
             self.name_ui.pushButton_apply.setEnabled(False)
 
     # Добавляем пользователей в combobox
@@ -350,6 +365,33 @@ class MainSettingsModule(object):
                 self.name_ui.label_remote_session_2.setText("Статус: \tВключен")
                 self.name_ui.label_remote_session_2.setStyleSheet("QLabel { background-color: lightgreen }")
 
+    def currentStateResolv(self):
+        state = False
+        comp_state = False
+        computer_name = os.uname()[1]
+        with open("/etc/hosts", 'r') as f:
+            for line in f:
+                if len(line.split()) > 1:
+                    computer_name_hosts = line.split()[1]
+                    if computer_name_hosts == computer_name and not comp_state:
+                        comp_state = True
+                        ip_hosts_list = line.split()[0].split('.')
+                        if len(ip_hosts_list) == 4:
+                            for elem in ip_hosts_list:
+                                if not elem.isnumeric():
+                                    state = True
+                                elif 255 < int(elem) or int(elem) < 0:
+                                    state = True
+                        else:
+                            state = True
+        if state or not comp_state:
+            self.name_ui.label_resolv_state.setText("Статус: \tНе настроен")
+            self.name_ui.label_resolv_state.setStyleSheet("QLabel { background-color: Tomato }")
+        elif not state or comp_state:
+            self.name_ui.label_resolv_state.setText("Статус: \tНастроен")
+            self.name_ui.label_resolv_state.setStyleSheet("QLabel { background-color: lightgreen }")
+            self.name_ui.checkBox_resolv.setDisabled(True)
+
     def clickPushbuttonApply(self):
         print("Нажата кнопка применить...")
         cur_user = self.name_ui.comboBox_nameuser.currentText()
@@ -395,10 +437,14 @@ class MainSettingsModule(object):
             self.currentStateTime()
         if self.name_ui.checkBox_remote_session.isChecked():
             if self.name_ui.radioButton_remote_enable.isChecked():
-                self.__appleSetRemoteSession(action="enable")
+                self.__applySetRemoteSession(action="enable")
             elif self.name_ui.radioButton_remote_disable.isChecked():
-                self.__appleSetRemoteSession(action="disable")
+                self.__applySetRemoteSession(action="disable")
             self.currentStateRemoteSession()
+        if self.name_ui.checkBox_resolv.isChecked():
+            if self.name_ui.radioButton_resolv.isChecked():
+                self.__applySetResolv()
+                self.currentStateResolv()
 
     def __applyAutologinDebian(self, action=None, cur_user=None):
         # Вкючаем автозагрузку
@@ -465,8 +511,11 @@ class MainSettingsModule(object):
                 if return_code:
                     QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка перезапуска сетевой службы!", QMessageBox.Ok)
                 else:
-                    if os.path.isfile("/etc/xdg/autostart/nm-applet.desktop.disabled"):
-                        return_code = runProcess("sudo mv -f /etc/xdg/autostart/nm-applet.desktop.disabled /etc/xdg/autostart/nm-applet.desktop", returncode=True)
+                    # if os.path.isfile("/etc/xdg/autostart/nm-applet.desktop.disabled"):
+                    if not os.path.isfile("/etc/xdg/autostart/nm-applet.desktop"):
+                        # return_code = runProcess("sudo mv -f /etc/xdg/autostart/nm-applet.desktop.disabled /etc/xdg/autostart/nm-applet.desktop", returncode=True)
+                        return_code = runProcess("sudo cp /usr/share/applications/nm-applet.desktop /etc/xdg/autostart/nm-applet.desktop",
+                                                 returncode=True)
                         if return_code:
                             QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка добавления значка!", QMessageBox.Ok)
                         else:
@@ -489,8 +538,11 @@ class MainSettingsModule(object):
                 if return_code != 0:
                     QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка перезапуска сетевой службы!", QMessageBox.Ok)
                 else:
+                    # if os.path.isfile("/etc/xdg/autostart/nm-applet.desktop"):
                     if os.path.isfile("/etc/xdg/autostart/nm-applet.desktop"):
-                        return_code = runProcess("sudo mv -f /etc/xdg/autostart/nm-applet.desktop /etc/xdg/autostart/nm-applet.desktop.disabled", returncode=True)
+                        # return_code = runProcess("sudo mv -f /etc/xdg/autostart/nm-applet.desktop /etc/xdg/autostart/nm-applet.desktop.disabled", returncode=True)
+                        return_code = runProcess("sudo rm -rf /etc/xdg/autostart/nm-applet.desktop",
+                                                 returncode=True)
                         if return_code != 0:
                             QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка удаления значка!", QMessageBox.Ok)
                         else:
@@ -575,7 +627,7 @@ class MainSettingsModule(object):
         else:
             QMessageBox.critical(self.obj_win, "Ошибка настройки времени!", "Ошибка настройки формата времени!", QMessageBox.Ok)
 
-    def __appleSetRemoteSession(self, action=None):
+    def __applySetRemoteSession(self, action=None):
         str_template_1 = None
         str_template_2 = None
         str_new_1 = None
@@ -601,3 +653,25 @@ class MainSettingsModule(object):
                 QMessageBox.critical(self.obj_win, "Ошибка!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
             else:
                 QMessageBox.information(self.obj_win, "Успех!", "{}".format("Настройка пункта меню выхода 'Удалённая сесиия' выполнена успешно!"), QMessageBox.Ok)
+
+    def __applySetResolv(self):
+        file_tmp = "/tmp/temp.tmp"
+        file = "/etc/hosts"
+        computer_name = os.uname()[1]
+        comp_state = False
+        with open(file_tmp, 'w') as ft:
+            with open(file, 'r') as f:
+                for line in f:
+                    if len(line.split()) > 1:
+                        computer_name_hosts = line.split()[1]
+                        if computer_name_hosts == computer_name and not comp_state:
+                            comp_state = True
+                            ft.writelines("127.0.1.1\t{}\n".format(computer_name))
+                        else:
+                            ft.writelines(line)
+                    else:
+                        ft.writelines(line)
+                if not comp_state:
+                    ft.writelines("127.0.1.1\t{}\n".format(computer_name))
+        out, err = runProcess("sudo cp {} {}".format(file_tmp, file))
+        QMessageBox.information(self.obj_win, "Успех!", "Успешно настроен файл hosts", QMessageBox.Ok)

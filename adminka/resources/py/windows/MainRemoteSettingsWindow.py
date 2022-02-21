@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainRemoteSettingsWindow.ui'
+# Form implementation generated from reading ui file 'adminka/qt/MainRemoteSettingsWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -12,13 +12,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_RemoteSettingsWindow(object):
-    def setupUi(self, RemoteSettingsWindow, width=809, height=441):
+    def setupUi(self, RemoteSettingsWindow, width=921, height=537):
         RemoteSettingsWindow.setObjectName("RemoteSettingsWindow")
         RemoteSettingsWindow.setEnabled(True)
         RemoteSettingsWindow.resize(width, height)
         RemoteSettingsWindow.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../resources/ico/logo.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("adminka/qt/../resources/ico/logo.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         RemoteSettingsWindow.setWindowIcon(icon)
         RemoteSettingsWindow.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.centralwidget = QtWidgets.QWidget(RemoteSettingsWindow)
@@ -66,7 +66,13 @@ class Ui_RemoteSettingsWindow(object):
         self.action_MainSettings.setObjectName("action_MainSettings")
         self.action_OpenRemoteSettings = QtWidgets.QAction(RemoteSettingsWindow)
         self.action_OpenRemoteSettings.setObjectName("action_OpenRemoteSettings")
+        self.action_ChangeSettings = QtWidgets.QAction(RemoteSettingsWindow)
+        self.action_ChangeSettings.setObjectName("action_ChangeSettings")
+        self.action_PXE = QtWidgets.QAction(RemoteSettingsWindow)
+        self.action_PXE.setObjectName("action_PXE")
         self.menu_LocalSettings.addAction(self.action_MainSettings)
+        self.menu_LocalSettings.addAction(self.action_ChangeSettings)
+        self.menu_LocalSettings.addAction(self.action_PXE)
         self.menu_LocalSettings.addSeparator()
         self.menu_LocalSettings.addAction(self.action_Exit)
         self.menu_RemoteSettings.addAction(self.action_OpenRemoteSettings)
@@ -97,6 +103,10 @@ class Ui_RemoteSettingsWindow(object):
         self.action_Exit.setText(_translate("RemoteSettingsWindow", "Выход"))
         self.action_Exit.setStatusTip(_translate("RemoteSettingsWindow", "Выход из программы"))
         self.action_MainSettings.setText(_translate("RemoteSettingsWindow", "Основные параметры"))
-        self.action_MainSettings.setStatusTip(_translate("RemoteSettingsWindow", "Изменений основных настроек ОС. Установка и удаление программ"))
+        self.action_MainSettings.setStatusTip(_translate("RemoteSettingsWindow", "Включает в себя настройку основных (общих) параметров системы"))
         self.action_OpenRemoteSettings.setText(_translate("RemoteSettingsWindow", "Открыть"))
         self.action_OpenRemoteSettings.setStatusTip(_translate("RemoteSettingsWindow", "Настройка удаленных машин"))
+        self.action_ChangeSettings.setText(_translate("RemoteSettingsWindow", "Настраиваемые параметры ОС"))
+        self.action_ChangeSettings.setStatusTip(_translate("RemoteSettingsWindow", "Включает в себя настройку индивидуальных параметров системы таких как имя компьютера, сетевые настройки и т.д."))
+        self.action_PXE.setText(_translate("RemoteSettingsWindow", "Настройка PXE сервера"))
+        self.action_PXE.setStatusTip(_translate("RemoteSettingsWindow", "Установка и настройка PXE сервера"))

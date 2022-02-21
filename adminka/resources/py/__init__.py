@@ -4,6 +4,7 @@ from .CheckSudo import CheckSudo
 from .version import OsVersion
 from .Programs import Programs
 from .ProgramsModule import ProgramsModule
+from .PxeModule import PxeModule
 from .MainSettingsModule import MainSettingsModule
 from .SshDesktopVnc import Ui_SshDesktopVnc
 

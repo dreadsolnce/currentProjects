@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainSettingsWindow</class>
+ <widget class="QMainWindow" name="MainSettingsWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1141</width>
+    <height>590</height>
+   </rect>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::DefaultContextMenu</enum>
+  </property>
+  <property name="windowTitle">
+   <string>Настройщик ОС Linux</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../resources/ico/logo.svg</normaloff>../resources/ico/logo.svg</iconset>
+  </property>
+  <property name="statusTip">
+   <string>Главное окно программы</string>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1141</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_LocalSettings">
+    <property name="title">
+     <string>Локальная настройка</string>
+    </property>
+    <addaction name="action_MainSettings"/>
+    <addaction name="action_ChangeSettings"/>
+    <addaction name="action_PXE"/>
+    <addaction name="separator"/>
+    <addaction name="action_Exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_RemoteSettings">
+    <property name="title">
+     <string>Удалённая настройка</string>
+    </property>
+    <addaction name="action_OpenRemoteSettings"/>
+   </widget>
+   <widget class="QMenu" name="menu_NetworkScanner">
+    <property name="title">
+     <string>Сканер сети</string>
+    </property>
+   </widget>
+   <addaction name="menu_LocalSettings"/>
+   <addaction name="menu_RemoteSettings"/>
+   <addaction name="menu_NetworkScanner"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_Exit">
+   <property name="text">
+    <string>Выход</string>
+   </property>
+   <property name="statusTip">
+    <string>Выход из программы</string>
+   </property>
+  </action>
+  <action name="action_MainSettings">
+   <property name="text">
+    <string>Основные параметры</string>
+   </property>
+   <property name="statusTip">
+    <string>Включает в себя настройку основных (общих) параметров системы</string>
+   </property>
+  </action>
+  <action name="action_OpenRemoteSettings">
+   <property name="text">
+    <string>Открыть</string>
+   </property>
+   <property name="statusTip">
+    <string>Настройка удаленных машин</string>
+   </property>
+  </action>
+  <action name="action_ChangeSettings">
+   <property name="text">
+    <string>Настраиваемые параметры ОС</string>
+   </property>
+   <property name="statusTip">
+    <string>Включает в себя настройку индивидуальных параметров системы таких как имя компьютера, сетевые настройки и т.д.</string>
+   </property>
+  </action>
+  <action name="action_PXE">
+   <property name="text">
+    <string>Настройка PXE сервера</string>
+   </property>
+   <property name="statusTip">
+    <string>Установка и настройка PXE сервера</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
