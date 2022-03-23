@@ -31,10 +31,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.pm = None  # Объект resources.ProgramsModule
         self.msm = None  # Объект resources.MainSettingsModule
+        self.csnh = None  # Объект resources.ChangeSettingsNameHost
+        self.cse = None  # Объект resources.ChangeSettingsEthernet
         self.pxem = None  # Объект resources.MainPxeModule
 
         self.gui = resources.Ui_MainWindow()
         self.main_settings = resources.Ui_MainSettingsWindow()
+        self.main_change_settings = resources.Ui_MainChangeSettingsWindow()
         self.main_pxe = resources.Ui_MainPxeWindow()
         self.remote_settings = resources.Ui_RemoteSettingsWindow()
 
@@ -69,6 +72,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def actionMainWindow(self):
         self.gui.action_MainSettings.triggered.connect(self.MenuMainSettingsWindows)
+        self.gui.action_ChangeSettings.triggered.connect(self.MenuMainChangeSettingsWindows)
         self.gui.action_PXE.triggered.connect(self.MenuPxeWindows)
         self.gui.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
         self.gui.action_Exit.triggered.connect(lambda: sys.exit())
@@ -103,12 +107,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_settings.checkBox_all.clicked.connect(self.pm.clkCheckbox)
         self.main_settings.pushButton_insprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="install"))
         self.main_settings.pushButton_delprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="remove"))
-        self.main_settings.action_Exit.triggered.connect(lambda: sys.exit())
 
         # self.main_settings.label_autologin.setFont(QtGui.QBrush(Qt.darkGreen)
 
-        self.main_settings.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
+        self.main_settings.action_ChangeSettings.triggered.connect(self.MenuMainChangeSettingsWindows)
         self.main_settings.action_PXE.triggered.connect(self.MenuPxeWindows)
+        self.main_settings.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
+        self.main_settings.action_Exit.triggered.connect(lambda: sys.exit())
 
     def MenuPxeWindows(self):
         print("Выбрано меню Локальная настройка > Настройка PXE сервера")
@@ -130,6 +135,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_pxe.pushButton_pxe_apply.clicked.connect(self.pxem.clickPushButtonApply)
 
         self.main_pxe.action_MainSettings.triggered.connect(self.MenuMainSettingsWindows)
+        self.main_pxe.action_ChangeSettings.triggered.connect(self.MenuMainChangeSettingsWindows)
         self.main_pxe.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
         self.main_pxe.action_Exit.triggered.connect(lambda: sys.exit())
 
@@ -141,8 +147,31 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def actionMenuRemoteSettingsWindows(self):
         self.remote_settings.action_MainSettings.triggered.connect(self.MenuMainSettingsWindows)
+        self.remote_settings.action_ChangeSettings.triggered.connect(self.MenuMainChangeSettingsWindows)
         self.remote_settings.action_PXE.triggered.connect(self.MenuPxeWindows)
         self.remote_settings.action_Exit.triggered.connect(lambda: sys.exit())
+
+    def MenuMainChangeSettingsWindows(self):
+        print("Выбрано меню Локальная настройка > Настраиваемые параметры ОС")
+        self.main_change_settings.setupUi(self, self.width, self.height)
+        self.setIcon()
+
+        self.csnh = resources.ChangeSettingsNameHost(name_ui=self.main_change_settings, obj_win=self)
+        self.cse = resources.ChangeSettingsEthernet(name_ui=self.main_change_settings, obj_win=self)
+
+        self.actionMenuMainChangeSettingsWindows()
+
+    def actionMenuMainChangeSettingsWindows(self):
+        # Отключение выделения текста в строке текущего имени хоста
+        self.main_change_settings.lineEdit_currentname.selectionChanged.connect(self.csnh.disableSelection)
+        self.main_change_settings.checkBox_change.clicked.connect(self.csnh.clickCheckboxChange)
+        self.main_change_settings.pushButton_namehost_cancel.clicked.connect(self.csnh.clickPushbuttonCancel)
+        self.main_change_settings.pushButton_namehost_apply.clicked.connect(self.csnh.clickPushbuttonApply)
+
+        self.main_change_settings.action_MainSettings.triggered.connect(self.MenuMainSettingsWindows)
+        self.main_change_settings.action_PXE.triggered.connect(self.MenuPxeWindows)
+        self.main_change_settings.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
+        self.main_change_settings.action_Exit.triggered.connect(lambda: sys.exit())
 
     # Центрирование окна относительно экрана
     def winCenter(self):

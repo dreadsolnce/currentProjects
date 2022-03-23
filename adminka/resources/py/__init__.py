@@ -6,6 +6,8 @@ from .Programs import Programs
 from .ProgramsModule import ProgramsModule
 from .PxeModule import PxeModule
 from .MainSettingsModule import MainSettingsModule
+from .ChangeSettingsModule import ChangeSettingsNameHost
+from .ChangeSettingsModule import ChangeSettingsEthernet
 from .SshDesktopVnc import Ui_SshDesktopVnc
 
 from .windows import *
