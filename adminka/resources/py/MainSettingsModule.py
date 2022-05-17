@@ -330,18 +330,22 @@ class MainSettingsModule(object):
             self.name_ui.label_root_state.setStyleSheet("QLabel { background-color: lightgreen }")
 
     def currentStateSSH(self):
-        state = findTemplateFile("/etc/ssh/ssh_config", "ForwardX11 yes")
-        if state:
-            state = findTemplateFile("/etc/ssh/sshd_config", "PermitRootLogin yes")
+        if os.path.isfile('/etc/ssh/sshd_config') and os.path.isfile("/etc/ssh/ssh_config"):
+            state = findTemplateFile("/etc/ssh/ssh_config", "ForwardX11 yes")
             if state:
-                state = findTemplateFile("/etc/ssh/sshd_config", "AddressFamily inet")
+                state = findTemplateFile("/etc/ssh/sshd_config", "PermitRootLogin yes")
                 if state:
-                    state = findTemplateFile("/etc/ssh/sshd_config", "X11UseLocalhost yes")
-        if state:
-            self.name_ui.label_ssh_state.setText("Статус: \tНастроен")
-            self.name_ui.label_ssh_state.setStyleSheet("QLabel { background-color: lightgreen }")
-        elif not state:
-            self.name_ui.label_ssh_state.setText("Статус: \tНе настроен")
+                    state = findTemplateFile("/etc/ssh/sshd_config", "AddressFamily inet")
+                    if state:
+                        state = findTemplateFile("/etc/ssh/sshd_config", "X11UseLocalhost yes")
+            if state:
+                self.name_ui.label_ssh_state.setText("Статус: \tНастроен")
+                self.name_ui.label_ssh_state.setStyleSheet("QLabel { background-color: lightgreen }")
+            elif not state:
+                self.name_ui.label_ssh_state.setText("Статус: \tНе настроен")
+                self.name_ui.label_ssh_state.setStyleSheet("QLabel { background-color: Tomato }")
+        else:
+            self.name_ui.label_ssh_state.setText("Статус: \tSSH не установлен")
             self.name_ui.label_ssh_state.setStyleSheet("QLabel { background-color: Tomato }")
 
     def currentStateTime(self):

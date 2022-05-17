@@ -4,12 +4,11 @@
 import os
 import sys
 import glob
-import shutil
-import threading
-import urllib3
 import time
-
+import shutil
+import urllib3
 import requests
+import threading
 import subprocess
 from time import sleep
 from pathlib import Path
@@ -40,19 +39,21 @@ class Programs(QtWidgets.QDialog):
     # Формирование списка программ
     def listProgram(self):
         if self.os_ver in self.name_debian:
-            self.list_program = ["pycharm-community", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git", "cherrytree",
-                                 "goodvibes", "draw.io", "qemu"]
+            self.list_program = ["pycharm-snap", "pycharm-portable", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git",
+                                 "cherrytree", "goodvibes", "draw.io", "qemu", "ssh", "gnome-tweaks"]
         # elif self.os_ver == '"AstraLinuxSE" 1.6':
         elif self.os_ver in self.name_astra:
             self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык", "qemu"]
 
         print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
-    # Определение состояния пакета в системе (0 - неустановлен, 1 - установлен)
+    # Определение состояния пакета в системе (0 - не установлен, 1 - установлен)
     def stateProg(self):
         state_program = {}  # Словарь: имя программы:статус программы (0 - не установлен, 1 - установлен)
         # Комманда для snap пакета pycharm-community
         command_snap = "snap list pycharm-community >/dev/null; echo $?"
+        # Команда для pycharm-portable
+        command_pycharm_port = "ls -al /opt/pycharm/pycharm* >/dev/null; echo $?"
         # Комманда для встроенных игр Ubuntu
         command_games = "dpkg --list | grep gnome-sudoku | awk '{print $2}' | grep -E ^gnome-sudoku$ >/dev/null; echo $?"
         # Команда для BgInfo
@@ -69,8 +70,10 @@ class Programs(QtWidgets.QDialog):
         for name in self.list_program:  # Перебираем весь список доступных программ
             if name == "игры":
                 command = command_games
-            elif name == "pycharm-community":
+            elif name == "pycharm-snap":
                 command = command_snap
+            elif name == "pycharm-portable":
+                command = command_pycharm_port
             elif name == "bginfo":
                 command = command_bginfo
             elif name == "vnc server 5":
@@ -97,10 +100,12 @@ class Programs(QtWidgets.QDialog):
     def actionProg(self, os_ver=None, action=None, lst_name_prog=None):
         # if os_ver == "Ubuntu 21.04":
         if os_ver in self.name_debian:
-            print("Запускаем функцию опредедения экшена для Ubuntu")
+            print("Hello!")
+
+            print('Запускаем функцию определения действия для Ubuntu')
             self.__actionProgUbuntu(action, lst_name_prog)
         elif os_ver == '"AstraLinuxSE" 1.6':
-            print("Запускаем функция определения экшена для AstraLinux 1.6")
+            print("Запускаем функция определения действия для AstraLinux 1.6")
             self.__actionProgAstra(action, lst_name_prog)
 
     # Установка либо удаление программ Ubuntu
@@ -110,7 +115,7 @@ class Programs(QtWidgets.QDialog):
             command = None
             if action == "install":
                 print("Устанавливаем программу {}".format(name))
-                if name == "pycharm-community":
+                if name == "pycharm-snap":
                     command_snap_ins = "sudo snap install {}"
                     command = command_snap_ins.format(name) + " --classic"
                 elif name == "pyqt5-dev-tools":
@@ -129,7 +134,7 @@ class Programs(QtWidgets.QDialog):
                     command = "sudo apt-get install {} -y".format(name)
             elif action == "remove":
                 print("Удаляем программу {}".format(name))
-                if name == "pycharm-community":
+                if name == "pycharm-snap":
                     command_snap_rem = "sudo snap remove {}"
                     command = command_snap_rem.format(name)
                 else:
@@ -142,6 +147,16 @@ class Programs(QtWidgets.QDialog):
                     command = "sudo apt-get purge {} -y".format(name)
             if name == "draw.io":
                 process_th = SetupDiagramNet(act=action)
+                process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                process_th.start()
+                while process_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                process_th.quit()
+            if name == "pycharm-portable":
+                process_th = SetupPycharmPortable(act=action)
                 process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
                 process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
                 process_th.start()
@@ -411,7 +426,9 @@ class SetupTimeshift(QtCore.QThread):
     def copy_file_conf(self):
         file_conf_src = self.files_path + "/files/timeshift/timeshift.json"
         file_conf_dst = '/etc/timeshift.json'
-        process = subprocess.Popen("sudo cp {} {}".format(file_conf_src, file_conf_dst), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen("sudo cp {} {}".format(file_conf_src, file_conf_dst), shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
         out, err = process.communicate()
         return err
 
@@ -507,7 +524,7 @@ class SetupBginfo(QtCore.QThread):
                         print("Запускаем программу")
                         os.system("/usr/local/bin/bginfo.bg &")
                     if not self.exit_code:
-                        txt = "Установка программы Bginfo выполенна успешно!"
+                        txt = "Установка программы Bginfo выполнена успешно!"
                         self.count += 1
                         self.new_log.emit(str(txt))
                         self.progress.emit(self.count)
@@ -550,7 +567,7 @@ class SetupBginfo(QtCore.QThread):
                 sleep(0.01)
             if not self.exit_code:
                 os.system("pkill root-tail")
-                txt = "Удаление программы Bginfo выполенна успешно!\n"
+                txt = "Удаление программы Bginfo выполнена успешно!\n"
             elif self.exit_code:
                 txt = "Ошибка при удалении программы BgInfo\n"
             self.count += 1
@@ -947,6 +964,266 @@ class SetupVncDesktop(QtCore.QThread):
         sleep(0.2)
 
 
+# Установка программы pycharm-portable
+class SetupPycharmPortable(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, act=None):
+        super().__init__()
+        self.act = act
+        self.link_to_download = "unknown"
+        self.dir_for_pycharm = "/opt/pycharm"  # Каталог установки программы
+        self.current_user = os.getlogin()  # Текущий пользователь системы
+        self.exit_code = 0
+        self.count = 0
+        self.return_code_download = None
+        self.full_path_tmp_arch = None  # Полный путь до скачанного архива с программой
+
+    def run(self):
+        if self.act == "install":
+            self.new_log.emit("Устанавливаем программу pycharm в папку /opt\n")
+            self.progress.emit(self.count)
+            sleep(1)
+            self.link_to_download = self.parsingWebsitePycharm()
+            print("Ссылка для скачивания программы: ", self.link_to_download)
+            out = self.check_targz_pycharm(package=self.link_to_download.split("/")[-1])
+            if not out:
+                txt = "Файл еще не скачен!\n"
+                self.count_and_text(txt)
+                print(txt)
+                if self.link_to_download != "unknown":
+                    self.downloadPackage()
+                    self.count_and_text()
+                    if self.return_code_download == 0:
+                        txt = "Загрузка завершена!\n"
+                        print(txt)
+                        self.count_and_text(txt)
+                        self.install_pycharm()
+                    else:
+                        txt = "Ошибка при загрузке!\n"
+                        print(txt)
+                        self.count_and_text(txt)
+                        self.progress.emit(100)
+            elif out:
+                txt = "Файл уже скачен!"
+                print(txt, end="\n")
+                self.count_and_text(txt)
+                self.install_pycharm()
+        elif self.act == "remove":
+            txt = "Удаляем программу pycharm из папки /opt"
+            print(txt)
+            self.count_and_text(txt)
+            self.remove_pycharm()
+
+    # Парсинг сайта для получения ссылки для скачивания
+    def parsingWebsitePycharm(self):
+        url = "https://www.jetbrains.com/pycharm/whatsnew/"
+        user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:99.0) Gecko/20100101 Firefox/99.0"
+        headers = {"Accept": "*/*", "user_agent": user_agent}
+        urllib3.disable_warnings()
+        text_html_for_parser = requests.get(url, headers=headers)
+
+        soup = BeautifulSoup(text_html_for_parser.content, "html.parser")
+
+        text_ver_pycharm = soup.title.text.split()[-1]
+        print("Версия PyCharm для скачивания: ", text_ver_pycharm)
+
+        url_for_download_wget = "https://download.jetbrains.com/python/pycharm-community-{}.tar.gz".format(text_ver_pycharm)
+
+        self.new_log.emit("Ссылка для скачивания: {}\n".format(url_for_download_wget))
+        return url_for_download_wget
+
+    # Функция проверки скачен пакет или
+    def check_targz_pycharm(self, package=None):
+        self.full_path_tmp_arch = "/tmp/{}".format(package)
+        print("Полный путь к архиву на компьютере: {}".format(self.full_path_tmp_arch))
+        if os.path.isfile(self.full_path_tmp_arch):
+            return True
+        else:
+            return False
+
+    # Скачивание пакета по ссылке
+    def downloadPackage(self):
+        self.new_log.emit("Скачиваем пакет!\n")
+        sleep(1)
+        t = threading.Thread(target=self.runDownload, name="Thread1")
+        t.start()
+        sleep(1)
+        self.readDataRunProcess()
+        t.join()
+
+    # Запуск процесса скачивания
+    def runDownload(self):
+        command = "wget --no-check-certificate --output-file=/tmp/data_out.txt -P /tmp " + self.link_to_download
+        proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        proc.communicate()
+
+        self.return_code_download = proc.returncode
+
+    # Чтение файла лога загрузки
+    def readDataRunProcess(self):
+        file_path = "/tmp/data_out.txt"
+        s = 0
+        with open(file_path, "r") as f:
+            while True:
+                line = f.readline()
+                if not line:
+                    s += 1
+                    time.sleep(0.1)
+                    if s > 5:
+                        f.close()
+                        break
+                else:
+                    s = 0
+                self.new_log.emit(line)
+        os.remove(file_path)
+
+    # Установка программы
+    def install_pycharm(self):
+        txt = "Разархивируем скаченный архив в системную папку /opt/"
+        print(txt)
+        self.count_and_text(txt)
+        err = self.mkdir_pycharm()
+        if not err:
+            err = self.unrar_pycharm()
+            if not err:
+                self.create_label()
+                self.copy_label()
+
+    # Создание папки куда будет извлечён архив
+    def mkdir_pycharm(self):
+        err = None
+
+        if not os.path.isdir(self.dir_for_pycharm):
+            out, err = runCommandReturnErr("sudo mkdir {}".format(self.dir_for_pycharm))
+        if not err:
+            out, err = runCommandReturnErr("sudo chown -R {}:{} {}".format(
+                self.current_user,
+                self.current_user,
+                self.dir_for_pycharm))
+            if not err:
+                txt = "Общий каталог для установки {} успешно создан".format(self.dir_for_pycharm)
+                print(txt)
+                self.count_and_text(txt)
+            else:
+                txt = "Ошибка! {}\n".format(err)
+                print(txt)
+                self.count_and_text(txt)
+        else:
+            txt = "Ошибка! {}\n".format(err)
+            print(txt)
+            self.count_and_text(txt)
+
+        return err
+
+    # Распаковка скачанного архива
+    def unrar_pycharm(self):
+        process = subprocess.Popen("tar xvzf {} -C {}".format(self.full_path_tmp_arch, self.dir_for_pycharm),
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        out = True
+        j = 0
+        while out:
+            out = process.stdout.readline()
+            self.new_log.emit(out.decode('utf-8', 'ignore'))
+            if j > 100:
+                self.progress.emit(self.count)
+                self.count += 1
+                j = 0
+            j += 1
+
+        process.communicate()
+        exit_code = process.returncode
+        sleep(0.2)
+
+        if exit_code == 0:
+            txt = "Распаковка архива выполнена успешно!"
+        else:
+            txt = "Ошибка при распаковке!"
+        print(txt)
+        self.count_and_text(txt)
+
+        return exit_code
+
+    # Создание ярлыка для запуска
+    def create_label(self):
+        # Путь к исполняемому файлу
+        path_to_exec = self.full_path_tmp_arch.split("/")[-1].split(".tar.gz")[0]
+
+        txt = "Каталог c версией программы {}".format(path_to_exec)
+        print(txt)
+        # self.count_and_text(txt)
+
+        file_tmp = "/tmp/PyCharm.desktop.tmp"
+        with open(file_tmp, "w") as f:
+            txt_for_write = "[Desktop Entry]\n" \
+                            "Type=Application\n" \
+                            "Name=PyCharm\n" \
+                            "GenericName=PyCharm\n" \
+                            "Comment=Editor\n" \
+                            "Exec=" + self.dir_for_pycharm + "/" + path_to_exec + "/bin/pycharm.sh\n" \
+                            "TryExec=" + self.dir_for_pycharm + "/" + path_to_exec + "/bin/pycharm.sh\n" \
+                            "Terminal=false\n" \
+                            "Icon=" + self.dir_for_pycharm + "/" + path_to_exec + "/bin/pycharm.png\n" \
+                            "Categories=Development;\n" \
+                            "StartupNotify=true\n" \
+                            "# MimeType=image/bmp;image/jpeg;image/png;image/tiff;image/gif;\n"
+
+            f.write(txt_for_write)
+
+    # Перемещение временного ярлыка в папку с ярлыками
+    def copy_label(self):
+        file_tmp = "/tmp/PyCharm.desktop.tmp"
+        runCommandReturnErr("sudo mv {} /usr/share/applications/PyCharm.desktop".format(file_tmp))
+        if not os.path.isfile("/usr/share/applications/PyCharm.desktop"):
+            txt = "Ошибка при создании ярлыка программы!\n"
+        else:
+            txt = "Ярлык программы создан успешно!\nПрограмма установлена!"
+        print(txt)
+        self.count_and_text(txt)
+        self.progress.emit(100)
+
+    # Удаление программы
+    def remove_pycharm(self):
+        err = self.remove_dir_opt()
+        if not err:
+            self.remove_label()
+        self.progress.emit(100)
+
+    def remove_dir_opt(self):
+        out, err = runCommandReturnErr("sudo rm -rf {}".format(self.dir_for_pycharm))
+        if not err:
+            txt = "Удаление папки {} выполнено!".format(self.dir_for_pycharm)
+            print(txt)
+            self.count_and_text(txt)
+        elif err:
+            txt = "Ошибка при удалении папки {}!".format(self.dir_for_pycharm)
+            print(txt)
+            self.count_and_text()
+        return err
+
+    def remove_label(self):
+        txt = None
+        label = "/usr/share/applicatioms/PyCharm.desktop"
+        out, err = runCommandReturnErr("sudo rm -rf {}".format(label))
+        if not err:
+            txt = "Удаление ярлыка выполнено!\nУдаление программы выполнено успешно!"
+        elif err:
+            txt = "Ошибка при удалении ярлыка!\nОшибка при удалении программы!"
+        print(txt)
+        self.count_and_text(txt)
+        return err
+
+    def count_and_text(self, txt=None):
+        sleep(0.1)
+        if txt:
+            self.new_log.emit(txt + "\n")
+        self.count += 1
+        self.progress.emit(self.count)
+
+
 # Установка программы Diagram.net для Ubuntu
 class SetupDiagramNet(QtCore.QThread):
     new_log = QtCore.pyqtSignal(str)
@@ -993,14 +1270,14 @@ class SetupDiagramNet(QtCore.QThread):
             self.new_log.emit(txt)
             self.progress.emit(100)
 
-    # Парсим сайт программы чтобы узнать текущую версию программы на данный момент
+    # Парсим сайт программы, чтобы узнать текущую версию программы на данный момент
     def parsing_diagram_net(self):
         link = "unknown"
         dn_http = "https://github.com/jgraph/drawio-desktop/releases/latest"
         user_agent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0"
         headers = {"user agent": user_agent}
         urllib3.disable_warnings()
-        html = requests.get(dn_http, headers, verify=False)
+        html = requests.get(dn_http, headers)
 
         soup = BeautifulSoup(html.content, "html.parser")
         price = soup.find("div", {"class": "markdown-body my-3"}).find("p").find_all('a')
@@ -1094,7 +1371,10 @@ class SetupQemu(QtCore.QThread):
 
     def __init__(self, action=None):
         super().__init__()
-        self.libs = ["libibverbs1", "ibverbs-providers", "ipxe-qemu", "libaio1", "libbrlapi0.6", "libcacard0", "libcapstone4", "libpmem1", "librdmacm1", "libslirp0", "libspice-server1", "libusbredirparser1", "libvdeplug2", "libvirglrenderer0", "ovmf", "seabios", "qemu-utils", "libfdt1", "qemu-system-common", "qemu-system-data", "qemu-system-x86"]
+        self.libs = ["libibverbs1", "ibverbs-providers", "ipxe-qemu", "libaio1", "libbrlapi0.6", "libcacard0",
+                     "libcapstone4", "libpmem1", "librdmacm1", "libslirp0", "libspice-server1", "libusbredirparser1",
+                     "libvdeplug2", "libvirglrenderer0", "ovmf", "seabios", "qemu-utils", "libfdt1", "qemu-system-common",
+                     "qemu-system-data", "qemu-system-x86"]
         self.action = action
         self.count = 0
         self.exit_code = 0

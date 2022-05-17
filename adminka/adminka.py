@@ -6,6 +6,35 @@ import subprocess
 import sys
 import threading
 
+
+def test_lib_python3_pyqt5():
+    lib = 'python3-pyqt5'
+    # Проверяем на наличие библиотеки в системе
+    command = "dpkg-query -L {} >/dev/null; echo $?".format(lib)
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = process.communicate()
+    if int(out.decode("utf-8")):
+        print("В системе отсутствует основная библиотека python3-pyqt5")
+        print("Определяем тип установленной ОС")
+        command = "cat /etc/lsb-release | grep DISTRIB_ID | awk -F= '{print $2}'"
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        os_ver = process.stdout.readline().decode("utf-8").strip()
+        print("Тип установленной ОС {}".format(os_ver))
+        print("Выполняем установку библиотеки!")
+        if os_ver == "Ubuntu":
+            command = "sudo apt-get install {}".format(lib)
+        elif os_ver == '"AstraLinuxSE"':
+            path_to_lib = sys.path[0] + '/files/lib/python/' + lib + '*'
+            command = "sudo dpkg -i {} ; sudo apt-get install -f".format(path_to_lib)
+        else:
+            command = None
+        if command:
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.communicate()
+
+
+test_lib_python3_pyqt5()
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QDesktopWidget
@@ -24,7 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.name_debian = ["Ubuntu 21.04", "Ubuntu 21.10"]  # Список поддерживаемых ОС семейства Ubuntu
+        self.name_debian = ["Ubuntu 21.04", "Ubuntu 21.10", "Ubuntu 22.04"]  # Список поддерживаемых ОС семейства Ubuntu
         self.name_astra = ['"AstraLinuxSE" 1.6']  # Список поддерживаемы ОС семейства AstraLinux
 
         self.os_ver = resources.OsVersion()  # Версия ОС
@@ -83,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setIcon()
 
         if self.os_ver in self.name_debian:
-            self.main_settings.frame_3.setEnabled(False)    # Отключаем не задействованные элементы меню.
+            self.main_settings.frame_3.setEnabled(False)  # Отключаем не задействованные элементы меню.
             self.main_settings.frame_remote_session.setEnabled(False)
 
         self.pm = resources.ProgramsModule(os_ver=self.os_ver,
@@ -212,12 +241,13 @@ class TimerMessageBox(QMessageBox, threading.Thread):
 
 
 def test_lib():
-    list_lib = ['python3-six', 'python3-urllib3', 'python3-cffi-backend', 'python3-idna', 'python3-pkg-resources', 'python3-setuptools',
-                'python3-pyasn1', 'python3-cryptography', 'python3-paramiko', 'python3-chardet', 'python3-requests', 'python3-bs4']
+    list_lib = ['python3-six', 'python3-urllib3', 'python3-cffi-backend', 'python3-idna', 'python3-pkg-resources',
+                'python3-setuptools', 'python3-pyasn1', 'python3-cryptography', 'python3-paramiko', 'python3-chardet',
+                'python3-requests', 'python3-bs4']
     os_ver = os_version()  # Версия ОС
     # Делаем общую проверку на наличие библиотек, если тест не проходит, то выполняем проверку по каждому элементу из списка
     ret = check_lib_all(list_lib)
-    if ret[0] != '0':   # Проверка не пройдена, проверяем по каждому элементу (библиотеке)
+    if ret[0] != '0':  # Проверка не пройдена, проверяем по каждому элементу (библиотеке)
         libs = []
         for i in list_lib:
             a1 = check_lib(i)
