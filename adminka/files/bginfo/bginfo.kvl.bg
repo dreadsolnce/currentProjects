@@ -81,20 +81,41 @@ x_f2=$((x_frame-max_length_f2*9))
 
     # ОТОБРАЖЕНИЕ ИНФОРМАЦИИ ИЗ ФАЙЛА 3
 
-/sbin/ifconfig eth0 | grep -w inet > /dev/null 
-if [ $? == 0 ]
-    then 
-	echo "IP адрес eth0:" `/sbin/ifconfig eth0 | grep -w inet | awk '{print $2}'` "/" `/sbin/ifconfig eth0 | grep -w inet | awk '{print $4}'` > $file3
-    else
-	echo "IP адрес eth0: Нет подключения!" > $file3
-fi
-/sbin/ifconfig eth1 | grep -w inet > /dev/null 
-if [ $? == 0 ]
-    then 
-	echo "IP адрес eth1:" `/sbin/ifconfig eth1 | grep -w inet | awk '{print $2}'` "/" `/sbin/ifconfig eth1 | grep -w inet | awk '{print $4}'` >> $file3
-    else
-	echo "IP адрес eth1: Нет подключения!" >> $file3
-fi
+> $file3
+name_dev=(eth0 eth1)
+for n in $name_dev
+do
+    #/sbin/ifconfig eth0 | grep -w inet > /dev/null 
+    /sbin/ifconfig $n | grep -w inet > /dev/null 
+    if [ $? == 0 ]
+	then 
+	    #echo "IP адрес eth0:" `/sbin/ifconfig eth0 | grep -w inet | awk '{print $2}'` "/" `/sbin/ifconfig eth0 | grep -w inet | awk '{print $4}'` > $file3
+	    #ip_list=$(ip -f inet a | grep eth0 | awk '{print $2}')
+	    ip_list=$(ip -f inet a | grep $n | awk '{print $2}')
+	    i=0
+	    for l in $ip_list
+	    do
+		if [ $i != 0 ]
+		    then
+			#echo "IP адрес eth0:" $l >> $file3
+			echo "IP адрес $n:" $l >> $file3
+		    else
+			i=$(($i+1))
+		fi
+	    done
+	#echo "IP адрес eth0:" `ip -f inet -c a | grep eth0 | awk '{print $2}'` > $file3
+	else
+	    #echo "IP адрес eth0: Нет подключения!" >> $file3
+	    echo "IP адрес $n: Нет подключения!" >> $file3
+	fi
+done
+#/sbin/ifconfig eth1 | grep -w inet > /dev/null 
+#if [ $? == 0 ]
+#    then 
+#	echo "IP адрес eth1:" `/sbin/ifconfig eth1 | grep -w inet | awk '{print $2}'` "/" `/sbin/ifconfig eth1 | grep -w inet | awk '{print $4}'` >> $file3
+#    else
+#	echo "IP адрес eth1: Нет подключения!" >> $file3
+#fi
 
 # Размер шрифта для файла file3
 ch_f3=18
