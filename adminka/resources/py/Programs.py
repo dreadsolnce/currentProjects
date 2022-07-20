@@ -40,7 +40,7 @@ class Programs(QtWidgets.QDialog):
     def listProgram(self):
         if self.os_ver in self.name_debian:
             self.list_program = ["pycharm-snap", "pycharm-portable", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git",
-                                 "cherrytree", "goodvibes", "draw.io", "qemu", "ssh", "gnome-tweaks"]
+                                 "cherrytree", "goodvibes", "draw.io", "qemu", "ssh", "gnome-tweaks", "gparted"]
         # elif self.os_ver == '"AstraLinuxSE" 1.6':
         elif self.os_ver in self.name_astra:
             self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык", "qemu"]

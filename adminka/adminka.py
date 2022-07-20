@@ -22,7 +22,7 @@ def test_lib_python3_pyqt5():
         print("Тип установленной ОС {}".format(os_ver))
         print("Выполняем установку библиотеки!")
         if os_ver == "Ubuntu":
-            command = "sudo apt-get install {}".format(lib)
+            command = "sudo apt-get install {} -y".format(lib)
         elif os_ver == '"AstraLinuxSE"':
             path_to_lib = sys.path[0] + '/files/lib/python/' + lib + '*'
             command = "sudo dpkg -i {} ; sudo apt-get install -f".format(path_to_lib)
