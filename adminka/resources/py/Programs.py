@@ -40,30 +40,32 @@ class Programs(QtWidgets.QDialog):
     def listProgram(self):
         if self.os_ver in self.name_debian:
             self.list_program = ["pycharm-snap", "pycharm-portable", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git",
-                                 "cherrytree", "goodvibes", "draw.io", "qemu", "ssh", "gnome-tweaks", "gparted"]
+                                 "cherrytree", "goodvibes", "draw.io", "qemu", "ssh", "gnome-tweaks", "gparted",
+                                 "myoffice-standard-home-edition", "snapd"]
         # elif self.os_ver == '"AstraLinuxSE" 1.6':
         elif self.os_ver in self.name_astra:
             self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык", "qemu"]
 
-        print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
+        # print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
     # Определение состояния пакета в системе (0 - не установлен, 1 - установлен)
     def stateProg(self):
         state_program = {}  # Словарь: имя программы:статус программы (0 - не установлен, 1 - установлен)
-        # Комманда для snap пакета pycharm-community
+        # Команда для snap пакета pycharm-community
         command_snap = "snap list pycharm-community >/dev/null; echo $?"
         # Команда для pycharm-portable
-        command_pycharm_port = "ls -al /opt/pycharm/pycharm* >/dev/null; echo $?"
-        # Комманда для встроенных игр Ubuntu
+        command_pycharm_port = "find /home/`logname` -name pycharm.sh >/dev/null; echo $?"
+        # Команда для встроенных игр Ubuntu
         command_games = "dpkg --list | grep gnome-sudoku | awk '{print $2}' | grep -E ^gnome-sudoku$ >/dev/null; echo $?"
         # Команда для BgInfo
         command_bginfo = "cat /usr/local/bin/bginfo.bg >/dev/null; echo $?"
-        # Комманд для vncserver 5.3.1
+        # Команд для vncserver 5.3.1
         command_vnc5server = "dpkg --list | grep realvnc-vnc-server | awk '{print $3}' | grep '5.3.1.17370' >/dev/null; echo $?"
         # Команда дял vncviewer 5.3.3
         command_vnc5viewer = "dpkg --list | grep realvnc-vnc-viewer | awk '{print $3}' | grep '5.3.3' >/dev/null; echo $?"
         # Команда для ярлыков программы vnc
-        command_vnc_desktop = "ls -al ~/Desktop/ | grep _SSH.desktop | grep VNC >/dev/null; echo $?"
+        # command_vnc_desktop = "ls -al ~/Desktop/ | grep _SSH.desktop | grep VNC >/dev/null; echo $?"
+        command_vnc_desktop = "find /home/`logname/Desktop` -name 'VNC*' >/dev/null; echo $?"
         # Команда для qemu
         command_qemu = "dpkg-query -L qemu-system-x86 >/dev/null; echo $?"
 
@@ -100,8 +102,6 @@ class Programs(QtWidgets.QDialog):
     def actionProg(self, os_ver=None, action=None, lst_name_prog=None):
         # if os_ver == "Ubuntu 21.04":
         if os_ver in self.name_debian:
-            print("Hello!")
-
             print('Запускаем функцию определения действия для Ubuntu')
             self.__actionProgUbuntu(action, lst_name_prog)
         elif os_ver == '"AstraLinuxSE" 1.6':
@@ -157,6 +157,26 @@ class Programs(QtWidgets.QDialog):
                 process_th.quit()
             if name == "pycharm-portable":
                 process_th = SetupPycharmPortable(act=action)
+                process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                process_th.start()
+                while process_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                process_th.quit()
+            if name == 'myoffice-standard-home-edition':
+                process_th = SetupMyOffice(act=action)
+                process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                process_th.start()
+                while process_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                process_th.quit()
+            if name == "snapd":
+                process_th = SetupSnapd(act=action)
                 process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
                 process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
                 process_th.start()
@@ -1206,7 +1226,7 @@ class SetupPycharmPortable(QtCore.QThread):
 
     def remove_label(self):
         txt = None
-        label = "/usr/share/applicatioms/PyCharm.desktop"
+        label = "/usr/share/applications/PyCharm.desktop"
         out, err = runCommandReturnErr("sudo rm -rf {}".format(label))
         if not err:
             txt = "Удаление ярлыка выполнено!\nУдаление программы выполнено успешно!"
@@ -1430,6 +1450,200 @@ class SetupQemu(QtCore.QThread):
             text = "Непредвиденная ОШИБКА!\n"
         self.new_log.emit(text)
         self.progress.emit(100)
+
+
+# Установка программы Мой офис
+class SetupMyOffice(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, act=None):
+        super().__init__()
+        self.count = 0
+        self.return_code_download = None
+        self.exit_code = 0
+        self.act = act
+        self.link_download = None
+
+    def run(self):
+        if self.act == "install":
+            self.new_log.emit("Устанавливаем программу myoffice-standard-home-edition\n")
+            self.progress.emit(self.count)
+            sleep(1)
+            self.link_download = self.parsing_site()
+            sleep(2)
+            if self.link_download:
+                self.count += 1
+                self.progress.emit(self.count)
+                self.download_package()
+                self.count += 1
+                self.progress.emit(self.count)
+                if self.return_code_download == 0:
+                    self.new_log.emit("Загрузка завершена!\n")
+                    return_code_install = self.dpkg_myoffice_install()
+                    if return_code_install == 0:
+                        self.new_log.emit("Установка завершена успешно!")
+                    else:
+                        self.new_log.emit("Ошибка при установке!")
+                else:
+                    self.new_log.emit("Ошибка при скачивании")
+                self.progress.emit(100)
+        elif self.act == "remove":
+            txt = None
+            self.dpkg_myoffice_remove()
+            if not self.exit_code:
+                txt = "Удаление программы myoffice-standard-home-edition выполнено успешно!\n"
+            elif self.exit_code:
+                txt = "Ошибка при удалении программы myoffice-standard-home-edition\n"
+            self.new_log.emit(txt)
+            self.progress.emit(100)
+
+    def parsing_site(self):
+        link_f = None
+        dn_http = "https://myoffice.ru/products/standard-home-edition/"
+        user_agent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0"
+        headers = {"user agent": user_agent}
+        urllib3.disable_warnings()
+        html = requests.get(dn_http, headers)
+
+        soup = BeautifulSoup(html.content, "html.parser")
+
+        links = soup.find(class_="operant-modal").find_all("a")
+        for j in links:
+            link_parser = j.get("href")
+            if link_parser[-4:] == '.deb':
+                link_f = link_parser
+
+        print("Ссылка для скачивания: ", link_f)
+        self.new_log.emit("Ссылка для скачивания: " + link_f)
+
+        return link_f
+
+    def download_package(self):
+        self.new_log.emit("\nСкачиваем пакет!\n")
+        sleep(2)
+        t = threading.Thread(target=self.run_down, name='Thread1')
+        t.start()
+        sleep(1)
+        self.run_read()
+        t.join()
+
+    # Запуск процесса скачивания
+    def run_down(self):
+        process = subprocess.Popen("wget -P /tmp/ --no-check-certificate --output-file=/tmp/test.txt " + self.link_download,
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        process.communicate()
+        self.return_code_download = process.returncode
+
+    # Чтение фала лога загрузки
+    def run_read(self):
+        file_path = "/tmp/test.txt"
+        s = 0
+        with open(file_path, "r") as f:
+            while True:
+                line = f.readline()
+                if not line:
+                    s += 1
+                    time.sleep(0.1)
+                    if s > 5:
+                        f.close()
+                        break
+                else:
+                    s = 0
+                self.new_log.emit(line)
+
+    # Установка deb пакета
+    def dpkg_myoffice_install(self):
+        package_name = self.link_download.split("/")[-1]
+        process = subprocess.Popen("sudo dpkg -i /tmp/%s" % package_name,
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        st = True
+        while st:
+            st = process.stdout.readline()
+            self.count += 1
+            self.new_log.emit(str(st.decode('utf-8', 'ignore')))
+            self.progress.emit(self.count)
+            print(st.decode("utf-8"), end="")
+            sleep(0.01)
+        process.communicate()
+        sleep(0.2)
+        os.remove("/tmp/" + package_name)
+        return process.returncode
+
+    def dpkg_myoffice_remove(self):
+        process = subprocess.Popen("sudo dpkg --purge myoffice-standard-home-edition",
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        st = True
+        while st:
+            st = process.stdout.readline()
+            self.count += 1
+            self.new_log.emit(str(st.decode('utf-8', 'ignore')))
+            self.progress.emit(self.count)
+            print(st.decode("utf-8"), end="")
+            sleep(0.01)
+        process.communicate()
+        self.exit_code = self.exit_code + process.returncode
+        sleep(0.2)
+
+
+# Установка пакета snapd
+class SetupSnapd(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, act=None):
+        super().__init__()
+        self.act = act
+        self.count = 1
+
+    def run(self):
+        if self.act == "install":
+            print('Функция не поддерживается')
+        elif self.act == "remove":
+            txt = "Будет выполнено удаление пакета snapd"
+            self.new_log.emit(txt)
+            sleep(2)
+
+            list_package = self.list_package_for_remove()
+
+            self.uninstall_snapd(list_pack=list_package)
+
+    def list_package_for_remove(self):
+        command = "snap list | awk '/1./{print $1}'"
+        proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        list_package = proc.stdout.readlines()
+        return list_package
+
+    def uninstall_snapd(self, list_pack=None):
+        if list_pack:
+            for package in list_pack:
+                command = 'sudo snap remove --purge ' + str(package.decode('utf-8'))
+                txt = 'Удаляем пакет ' + str(package.decode('utf-8'))
+                self.new_log.emit(txt)
+                self.progress.emit(self.count)
+                self.count += 1
+                sleep(1)
+                # self.run_command(command=command)
+
+    def run_command(self, command=None):
+        count = 0
+        proc = subprocess.Popen(self.command, shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        st = proc.stdout.readline()
+        while st:
+            st = proc.stdout.readline()
+            self.new_log.emit(st.decode('utf-8', 'ignore'))
+            self.progress.emit(count)
+            print(st.decode("utf-8"), end="")
+            count += 1
+            sleep(0.01)
 
 
 # Запуск команды с выводом данных выполнения
