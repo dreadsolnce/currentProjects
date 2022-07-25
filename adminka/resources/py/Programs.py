@@ -41,7 +41,7 @@ class Programs(QtWidgets.QDialog):
         if self.os_ver in self.name_debian:
             self.list_program = ["pycharm-snap", "pycharm-portable", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git",
                                  "cherrytree", "goodvibes", "draw.io", "qemu", "ssh", "gnome-tweaks", "gparted",
-                                 "myoffice-standard-home-edition", "snapd"]
+                                 "myoffice-standard-home-edition", "snapd", "firefox"]
         # elif self.os_ver == '"AstraLinuxSE" 1.6':
         elif self.os_ver in self.name_astra:
             self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык", "qemu"]
@@ -120,7 +120,14 @@ class Programs(QtWidgets.QDialog):
                     command = command_snap_ins.format(name) + " --classic"
                 elif name == "pyqt5-dev-tools":
                     name = "python3-pyqt5 qtcreator pyqt5-dev-tools qttools5-dev-tools"
-                    command_2 = " ; sudo rm -rf /usr/share/applications/linguist-qt5.desktop"
+                    # command_2 = " ; sudo rm -rf /usr/share/applications/linguist-qt5.desktop" \
+                    #             "/usr/share/applications/assistant-qt5.desktop"
+                    command_2 = " ; sudo mv /usr/share/applications/linguist-qt5.desktop " \
+                                "/usr/share/applications/linguist-qt5.desktop.bak ; " \
+                                "sudo mv /usr/share/applications/assistant-qt5.desktop " \
+                                "/usr/share/applications/assistant-qt5.desktop.bak ; " \
+                                "sudo mv /usr/share/applications/designer-qt5.desktop " \
+                                "/usr/share/applications/designer-qt5.desktop.bak"
                     command = "sudo apt-get install {} -y".format(name) + command_2
                 elif name == "mc":
                     command_2 = " ; sudo rm -rf /usr/share/applications/mcedit.desktop"
@@ -177,6 +184,16 @@ class Programs(QtWidgets.QDialog):
                 process_th.quit()
             if name == "snapd":
                 process_th = SetupSnapd(act=action)
+                process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                process_th.start()
+                while process_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                process_th.quit()
+            if name == "firefox":
+                process_th = SetupFirefox(act=action)
                 process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
                 process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
                 process_th.start()
@@ -321,7 +338,7 @@ class RunProcessUbuntuPrograms(QtCore.QThread):
             self.progress.emit(count)
             print(st.decode("utf-8"), end="")
             count += 1
-            sleep(0.01)
+            sleep(0.1)
         self.progress.emit(100)
 
 
@@ -1594,27 +1611,49 @@ class SetupMyOffice(QtCore.QThread):
 
 # Установка пакета snapd
 class SetupSnapd(QtCore.QThread):
+    count = 0
     new_log = QtCore.pyqtSignal(str)
     progress = QtCore.pyqtSignal(int)
 
     def __init__(self, act=None):
         super().__init__()
         self.act = act
-        self.count = 1
+
+    def change_progress_new_log(self, txt=None):
+        self.count += 1
+        if txt:
+            self.new_log.emit(txt)
+        self.progress.emit(self.count)
+        sleep(1)
 
     def run(self):
         if self.act == "install":
-            print('Функция не поддерживается')
+            txt = 'Функция не поддерживается'
+            self.change_progress_new_log(txt=txt)
+            self.progress.emit(100)
         elif self.act == "remove":
             txt = "Будет выполнено удаление пакета snapd"
-            self.new_log.emit(txt)
-            sleep(2)
+            self.change_progress_new_log(txt=txt)
+            for j in range(2):
+                list_package = self.list_package_for_remove()
+                self.change_progress_new_log()
+                self.uninstall_snapd(list_pack=list_package)
+                self.change_progress_new_log()
 
+            self.clear_snap()
+
+            error = self.disable_returninstall_snapd()
             list_package = self.list_package_for_remove()
 
-            self.uninstall_snapd(list_pack=list_package)
+            if not list_package and not error:
+                txt = "\nПакет snapd полностью удален из системы"
+            else:
+                txt = "\nПакет snapd удалён частично! Попробуйте удалить ещё раз"
+            self.change_progress_new_log(txt=txt)
+            self.progress.emit(100)
 
-    def list_package_for_remove(self):
+    @staticmethod
+    def list_package_for_remove():
         command = "snap list | awk '/1./{print $1}'"
         proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         list_package = proc.stdout.readlines()
@@ -1624,26 +1663,130 @@ class SetupSnapd(QtCore.QThread):
         if list_pack:
             for package in list_pack:
                 command = 'sudo snap remove --purge ' + str(package.decode('utf-8'))
-                txt = 'Удаляем пакет ' + str(package.decode('utf-8'))
-                self.new_log.emit(txt)
-                self.progress.emit(self.count)
-                self.count += 1
-                sleep(1)
-                # self.run_command(command=command)
+                self.change_progress_new_log(txt='\nУдаляем пакет ' + str(package.decode('utf-8')))
+                txt = self.run_command(command=command)
+                self.change_progress_new_log(txt=txt)
 
-    def run_command(self, command=None):
-        count = 0
-        proc = subprocess.Popen(self.command, shell=True,
+    def clear_snap(self):
+        self.change_progress_new_log(txt='\nВычищаем оснастку Snap\n')
+        command = 'sudo apt-get remove --purge --autoremove snapd gnome-software-plugin-snap -y'
+        self.change_progress_new_log()
+        txt = self.run_command(command=command)
+        self.change_progress_new_log(txt=txt)
+
+    def disable_returninstall_snapd(self):
+        out_data = True
+        txt = '\nОтключаем возможность повторной установки snapd\n'
+        self.change_progress_new_log(txt=txt)
+        file = '/tmp/nosnap.tmp'
+        file_dest = "/etc/apt/preferences.d/nosnap.pref"
+        txt = "Package: snapd\nPin: release a=*\nPin-Priority: -10\n"
+        command = "sudo mv {} {}".format(file, file_dest)
+        with open(file, 'w') as f:
+            f.write(txt)
+        self.run_command(command)
+
+        if os.path.isfile(file_dest):
+            out_data = False
+            txt = None
+        else:
+            txt = "Ошибка!"
+        self.change_progress_new_log(txt=txt)
+
+        return out_data
+
+    @staticmethod
+    def run_command(command=None):
+        proc = subprocess.Popen(command, shell=True,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
-        st = proc.stdout.readline()
+        out, err = proc.communicate()
+        error = err.decode('utf-8').strip()
+        if error:
+            print('Ошибка:', error)
+            txt = error
+        else:
+            txt = 'Удалено'
+        return txt
+
+
+# Установка FireFox
+class SetupFirefox(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, act=None):
+        super().__init__()
+        self.act = act
+        self.count = 0
+        self.error = None
+
+    def run(self):
+        if self.act == "install":
+            self.change_progress_new_log(txt="Установка FireFox\n")
+            self.error = self.add_repo()  # Добавляем репозиторий
+            if not self.error:
+                self.change_progress_new_log(txt='Настраиваем высокий приоритет для deb пакета\n')
+                self.error = self.add_apt_99mozillateamppa()
+                if not self.error:
+                    self.change_progress_new_log(txt='Устанавливаем firefox\n')
+                    self.error = self.apt_firefox(act='install')
+        elif self.act == "remove":
+            self.change_progress_new_log(txt='Удаляем firefox\n')
+            self.error = self.apt_firefox(act='purge')
+
+        if not self.error:
+            txt = 'Успех!'
+        else:
+            txt = "Ошибка"
+        self.change_progress_new_log(txt=txt, pause=2)
+        self.progress.emit(100)
+
+    def add_repo(self):
+        self.change_progress_new_log(txt="Добавляем репозиторий!\n")
+        command = 'sudo add-apt-repository ppa:mozillateam/ppa -y'
+        return_code = self.run_process_view_data(command)
+        return return_code
+
+    def add_apt_99mozillateamppa(self):
+        file_ppa_tmp = "/tmp/ppamozilla.tmp"
+        file_destination = "/etc/apt/preferences.d/99mozillateamppa"
+        txt = 'Package: firefox*\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 501\n' \
+              '\nPackage: firefox*\nPin: release o=Ubuntu\nPin-Priority: -1\n'
+        with open(file_ppa_tmp, 'w') as f:
+            f.write(txt)
+        command = 'sudo mv {} {}'.format(file_ppa_tmp, file_destination)
+        return_code = self.run_process_view_data(command=command)
+        return return_code
+
+    def apt_firefox(self, act=None):
+        if act:
+            command = "sudo apt {} -t 'o=LP-PPA-mozillateam' firefox firefox-locale-ru -y".format(act)
+            return_code = self.run_process_view_data(command=command)
+            return return_code
+
+    def change_progress_new_log(self, txt=None, pause=None):
+        if not pause:
+            pause = 1
+        self.count += 1
+        if txt:
+            self.new_log.emit(txt)
+        self.progress.emit(self.count)
+        sleep(pause)
+
+    def run_process_view_data(self, command=None):
+        process = subprocess.Popen(command, shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        st = True
         while st:
-            st = proc.stdout.readline()
-            self.new_log.emit(st.decode('utf-8', 'ignore'))
-            self.progress.emit(count)
+            st = process.stdout.readline()
+            self.change_progress_new_log(txt=str(st.decode('utf-8', 'ignore')), pause=0.1)
             print(st.decode("utf-8"), end="")
-            count += 1
             sleep(0.01)
+        process.communicate()
+        sleep(0.2)
+        return process.returncode
 
 
 # Запуск команды с выводом данных выполнения
