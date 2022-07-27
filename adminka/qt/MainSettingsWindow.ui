@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1141</width>
-    <height>590</height>
+    <width>1167</width>
+    <height>549</height>
    </rect>
   </property>
   <property name="contextMenuPolicy">
@@ -190,6 +190,253 @@
          </layout>
         </widget>
        </item>
+       <item row="1" column="1">
+        <widget class="QFrame" name="frame_remote_session">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_remote_session">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>135</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="statusTip">
+             <string>Добавляет меню &quot;Удаленный&quot; в меню диалога &quot;Выхода или выключение&quot; -&gt; Новый вход</string>
+            </property>
+            <property name="text">
+             <string>Удалённая сессия</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="checkBox_remote_session">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_remote_session_2">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>11</pointsize>
+              <weight>50</weight>
+              <italic>false</italic>
+              <bold>false</bold>
+              <underline>false</underline>
+             </font>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Plain</enum>
+            </property>
+            <property name="lineWidth">
+             <number>0</number>
+            </property>
+            <property name="midLineWidth">
+             <number>0</number>
+            </property>
+            <property name="text">
+             <string>Статус: </string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="radioButton_remote_enable">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="statusTip">
+             <string>Добавляет апплет Удалённый</string>
+            </property>
+            <property name="text">
+             <string>Включить пункт</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="2">
+           <widget class="QRadioButton" name="radioButton_remote_disable">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="statusTip">
+             <string>Убирает пункт Удалённый</string>
+            </property>
+            <property name="text">
+             <string>Отключить пункт</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="2" rowspan="2">
+        <widget class="QFrame" name="frame_root">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_root_pass_confirm">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="statusTip">
+             <string>Повтор ввода пароля</string>
+            </property>
+            <property name="text">
+             <string>Confirm:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="3">
+           <widget class="QPlainTextEdit" name="plainTextEdit_root">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="plainText">
+             <string>  Включает в себя настройку пароля (новый либо действующий), котрый необходим для доступа по протоколу ssh, а ткаже задает уровень целостности тип &quot;Высокий&quot; для полноценного доступа к функциям администрирования операционной системы.</string>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::NoTextInteraction</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="checkBox_root">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="2">
+           <widget class="QLabel" name="label_root_state">
+            <property name="text">
+             <string>Статус: </string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="3">
+           <widget class="QLabel" name="label_root">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Настройка суперпользователя root</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLineEdit" name="lineEdit_pass_confirm">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="statusTip">
+             <string>Повтор ввода пароля</string>
+            </property>
+            <property name="echoMode">
+             <enum>QLineEdit::Password</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_root_pass">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="statusTip">
+             <string>Новый или текущий пароль суперпользователя</string>
+            </property>
+            <property name="text">
+             <string>Пароль:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLineEdit" name="lineEdit_pass">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="statusTip">
+             <string>Новый или текущий пароль суперпользователя</string>
+            </property>
+            <property name="inputMask">
+             <string/>
+            </property>
+            <property name="echoMode">
+             <enum>QLineEdit::Password</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="0" column="1">
         <widget class="QFrame" name="frame_ssh">
          <property name="sizePolicy">
@@ -320,126 +567,6 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="2" rowspan="3">
-        <widget class="QFrame" name="frame_root">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_root_pass_confirm">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="statusTip">
-             <string>Повтор ввода пароля</string>
-            </property>
-            <property name="text">
-             <string>Confirm:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="3">
-           <widget class="QPlainTextEdit" name="plainTextEdit_root">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="plainText">
-             <string>  Включает в себя настройку пароля (новый либо действующий), котрый необходим для доступа по протоколу ssh, а ткаже задает уровень целостности тип &quot;Высокий&quot; для полноценного доступа к функциям администрирования операционной системы.</string>
-            </property>
-            <property name="textInteractionFlags">
-             <set>Qt::NoTextInteraction</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBox_root">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="2">
-           <widget class="QLabel" name="label_root_state">
-            <property name="text">
-             <string>Статус: </string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="3">
-           <widget class="QLabel" name="label_root">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Настройка суперпользователя root</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QLineEdit" name="lineEdit_pass_confirm">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="statusTip">
-             <string>Повтор ввода пароля</string>
-            </property>
-            <property name="echoMode">
-             <enum>QLineEdit::Password</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_root_pass">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="statusTip">
-             <string>Новый или текущий пароль суперпользователя</string>
-            </property>
-            <property name="text">
-             <string>Пароль:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2">
-           <widget class="QLineEdit" name="lineEdit_pass">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="statusTip">
-             <string>Новый или текущий пароль суперпользователя</string>
-            </property>
-            <property name="inputMask">
-             <string/>
-            </property>
-            <property name="echoMode">
-             <enum>QLineEdit::Password</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QFrame" name="frame_resolv">
          <property name="frameShape">
@@ -518,53 +645,30 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QFrame" name="frame_remote_session">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+       <item row="3" column="0" colspan="3">
+        <widget class="QPushButton" name="pushButton_apply">
+         <property name="enabled">
+          <bool>false</bool>
          </property>
+         <property name="statusTip">
+          <string>Применить отмеченные изменения</string>
+         </property>
+         <property name="text">
+          <string>Применить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QFrame" name="frame_3">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QGridLayout" name="gridLayout_6">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_remote_session">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>135</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-              <weight>75</weight>
-              <italic>true</italic>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="statusTip">
-             <string>Добавляет меню &quot;Удаленный&quot; в меню диалога &quot;Выхода или выключение&quot; -&gt; Новый вход</string>
-            </property>
-            <property name="text">
-             <string>Удалённая сессия</string>
-            </property>
-           </widget>
-          </item>
+         <layout class="QGridLayout" name="gridLayout_3">
           <item row="0" column="1">
-           <widget class="QCheckBox" name="checkBox_remote_session">
+           <widget class="QCheckBox" name="checkBox_networkmanager">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -582,19 +686,42 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="1" colspan="2">
+           <widget class="QRadioButton" name="radioButton_netdisable">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="statusTip">
+             <string>Отключить аплет сетевых настроек</string>
+            </property>
+            <property name="text">
+             <string>Отключить</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="radioButton_netenable">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="statusTip">
+             <string>Включить аплет сетевых настроек</string>
+            </property>
+            <property name="text">
+             <string>Включить</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="2">
-           <widget class="QLabel" name="label_remote_session_2">
+           <widget class="QLabel" name="label_networkmanager">
             <property name="enabled">
              <bool>true</bool>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>11</pointsize>
-              <weight>50</weight>
-              <italic>false</italic>
-              <bold>false</bold>
-              <underline>false</underline>
-             </font>
             </property>
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
@@ -616,29 +743,33 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="radioButton_remote_enable">
-            <property name="enabled">
-             <bool>false</bool>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>11</pointsize>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
             </property>
             <property name="statusTip">
-             <string>Добавляет апплет Удалённый</string>
+             <string>Позволяет настроить аплет сетевых настроек отображаемый в правом углу экрана</string>
             </property>
             <property name="text">
-             <string>Включить пункт</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="2">
-           <widget class="QRadioButton" name="radioButton_remote_disable">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="statusTip">
-             <string>Убирает пункт Удалённый</string>
-            </property>
-            <property name="text">
-             <string>Отключить пункт</string>
+             <string>NetworkManager     </string>
             </property>
            </widget>
           </item>
@@ -785,68 +916,43 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QFrame" name="frame_3">
+       <item row="2" column="2">
+        <widget class="QFrame" name="frame_sudo">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="1">
-           <widget class="QCheckBox" name="checkBox_networkmanager">
+         <layout class="QGridLayout" name="gridLayout_10">
+          <item row="1" column="0" colspan="2">
+           <widget class="QLabel" name="label_sudo">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>50</width>
+              <width>220</width>
               <height>0</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
-             <string/>
+             <string>Настройка sudo без пароля</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1" colspan="2">
-           <widget class="QRadioButton" name="radioButton_netdisable">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="statusTip">
-             <string>Отключить аплет сетевых настроек</string>
-            </property>
-            <property name="text">
-             <string>Отключить</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="radioButton_netenable">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="statusTip">
-             <string>Включить аплет сетевых настроек</string>
-            </property>
-            <property name="text">
-             <string>Включить</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_networkmanager">
+          <item row="1" column="3">
+           <widget class="QLabel" name="label_sudo_state">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -870,50 +976,58 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_4">
+          <item row="2" column="0">
+           <widget class="QRadioButton" name="radioButton_sudo_enabled">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="statusTip">
+             <string>Включить аплет сетевых настроек</string>
+            </property>
+            <property name="text">
+             <string>Включить</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QRadioButton" name="radioButton_sudo_disabled">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="statusTip">
+             <string>Отключить аплет сетевых настроек</string>
+            </property>
+            <property name="text">
+             <string>Отключить</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QCheckBox" name="checkBox_sudo">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>0</width>
+              <width>50</width>
               <height>0</height>
              </size>
             </property>
-            <property name="font">
-             <font>
-              <pointsize>11</pointsize>
-              <weight>75</weight>
-              <italic>true</italic>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="statusTip">
-             <string>Позволяет настроить аплет сетевых настроек отображаемый в правом углу экрана</string>
-            </property>
             <property name="text">
-             <string>NetworkManager     </string>
+             <string/>
             </property>
            </widget>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="3">
-        <widget class="QPushButton" name="pushButton_apply">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="statusTip">
-          <string>Применить отмеченные изменения</string>
-         </property>
-         <property name="text">
-          <string>Применить</string>
-         </property>
         </widget>
        </item>
       </layout>
@@ -1000,8 +1114,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1141</width>
-     <height>24</height>
+     <width>1167</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_LocalSettings">

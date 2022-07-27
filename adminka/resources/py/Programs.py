@@ -126,8 +126,8 @@ class Programs(QtWidgets.QDialog):
                                 "/usr/share/applications/linguist-qt5.desktop.bak ; " \
                                 "sudo mv /usr/share/applications/assistant-qt5.desktop " \
                                 "/usr/share/applications/assistant-qt5.desktop.bak ; " \
-                                "sudo mv /usr/share/applications/designer-qt5.desktop " \
-                                "/usr/share/applications/designer-qt5.desktop.bak"
+                                "sudo mv /usr/share/applications/org.qt-project.qtcreator-qt5.desktop " \
+                                "/usr/share/applications/org.qt-project.qtcreator-qt5.desktop.bak"
                     command = "sudo apt-get install {} -y".format(name) + command_2
                 elif name == "mc":
                     command_2 = " ; sudo rm -rf /usr/share/applications/mcedit.desktop"

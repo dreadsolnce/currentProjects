@@ -3,6 +3,7 @@
 
 import os
 import subprocess
+from resources.py.modules.MChangeFile import FileProcess
 from PyQt5.QtWidgets import QMessageBox
 
 
@@ -106,11 +107,13 @@ def copyFile(file_src=None, file_bak=None, copying_reverse=False):
         # if not os.path.isfile(file_bak):
         #     err = "NotFileBak"
         # else:
-        process = subprocess.Popen("sudo cp {} {}".format(file_bak, file_src), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen("sudo cp {} {}".format(file_bak, file_src),
+                                   shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
     else:
         if not os.path.isfile(file_bak):
-            process = subprocess.Popen("sudo cp {} {}".format(file_src, file_bak), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen("sudo cp {} {}".format(file_src, file_bak),
+                                       shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = process.communicate()
     return out, err
 
@@ -121,6 +124,24 @@ def findTemplateFile(file=None, template=None):
             if " ".join(line.split()) == " ".join(template.split()):
                 return True
     return False
+
+
+# Функция определяющая оканчивается ли файл пустой строкой
+class EmptyLine(object):
+    def __init__(self, file):
+        self.file = file
+        self.exit_code = None
+        self.empty_line()
+
+    def empty_line(self):
+        with open(self.file, 'r') as f:
+            last_line = f.readlines()[-1]
+            ln = ''.join(last_line.split())
+        if len(ln.strip(' ')) > 0:
+            self.exit_code = 1  # Последняя строка не пустая
+        elif len(ln.strip(' ')) == 0:
+            self.exit_code = 0  # Последняя строка пустая
+        return self.exit_code
 
 
 class MainSettingsModule(object):
@@ -139,6 +160,7 @@ class MainSettingsModule(object):
         self.currentStateTime()
         self.currentStateRemoteSession()
         self.currentStateResolv()
+        self.currentStateSudo()
 
     def clickAutologinCheckBox(self):
         bool_state = False
@@ -151,7 +173,7 @@ class MainSettingsModule(object):
         self.name_ui.comboBox_nameuser.setEnabled(bool_state)
         self.name_ui.label_autologin.setDisabled(bool_state)
 
-        # Если текущвая ОС принадлежит астре, то открываем пункт выбора уровня доступа
+        # Если текущая ОС принадлежит астре, то открываем пункт выбора уровня доступа
         if self.os_ver in self.os_astra:
             self.name_ui.comboBox_mac.setEnabled(bool_state)
             self.name_ui.label_3.setEnabled(bool_state)
@@ -246,16 +268,29 @@ class MainSettingsModule(object):
 
         self.stateApplyPushButton()
 
+    def clickSetSudo(self):
+        bool_state = False
+        if self.name_ui.checkBox_sudo.isChecked():
+            bool_state = True
+        elif not self.name_ui.checkBox_sudo.isChecked():
+            bool_state = False
+
+        self.name_ui.label_sudo_state.setDisabled(bool_state)
+        self.name_ui.radioButton_sudo_enabled.setEnabled(bool_state)
+        self.name_ui.radioButton_sudo_disabled.setEnabled(bool_state)
+
+        self.stateApplyPushButton()
+
     def stateApplyPushButton(self):
         if self.name_ui.checkBox_networkmanager.isChecked() or self.name_ui.checkBox_autologin.isChecked() \
                 or self.name_ui.checkBox_root.isChecked() or self.name_ui.checkBox_ssh.isChecked() \
-                or self.name_ui.checkBox_time.isChecked() or self.name_ui.checkBox_remote_session.isChecked()\
-                or self.name_ui.checkBox_resolv.isChecked():
+                or self.name_ui.checkBox_time.isChecked() or self.name_ui.checkBox_remote_session.isChecked() \
+                or self.name_ui.checkBox_resolv.isChecked() or self.name_ui.checkBox_sudo.isChecked():
             self.name_ui.pushButton_apply.setEnabled(True)
         elif not self.name_ui.checkBox_networkmanager.isChecked() and not self.name_ui.checkBox_autologin.isChecked() \
                 and not self.name_ui.checkBox_root.isChecked() and not self.name_ui.checkBox_ssh.isChecked() \
-                and not self.name_ui.checkBox_time.isChecked() and not self.name_ui.checkBox_remote_session.isChecked()\
-                and not self.name_ui.checkBox_resolv.isChecked():
+                and not self.name_ui.checkBox_time.isChecked() and not self.name_ui.checkBox_remote_session.isChecked() \
+                and not self.name_ui.checkBox_resolv.isChecked() and not self.name_ui.checkBox_sudo.isChecked():
             self.name_ui.pushButton_apply.setEnabled(False)
 
     # Добавляем пользователей в combobox
@@ -283,7 +318,7 @@ class MainSettingsModule(object):
             self.name_ui.comboBox_mac.addItems(ml)
 
     def currentUserAutologin(self):
-        # Если текущвая ОС принадлежит астре
+        # Если текущая ОС принадлежит астре
         if self.os_ver in self.os_astra:
             state_autologin, name_user_login = stateAutoLoginAstra("/etc/X11/fly-dm/fly-dmrc", "AutoLoginEnable")
             if not state_autologin:
@@ -296,7 +331,8 @@ class MainSettingsModule(object):
                     self.name_ui.label_autologin.setText('Статус: \tВключён. Пользователь {}'.format(name_user))
                     self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: lightgreen }")
 
-        # Если текущвая ОС принадлежит ubuntu, то определяем статус автозагрузки применяя соответствующие функции: stateAutoLogin и userAutoLogin
+        # Если текущая ОС принадлежит ubuntu, то определяем статус автозагрузки применяя соответствующие
+        # функции: stateAutoLogin и userAutoLogin
         elif self.os_ver in self.os_debian:
             state_autologin, name_user_login = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLoginEnable")
             if not state_autologin:
@@ -361,7 +397,8 @@ class MainSettingsModule(object):
         if os.path.isfile('/etc/X11/fly-dm/Xaccess'):
             state = findTemplateFile("/etc/X11/fly-dm/Xaccess", "localhost #any host can get a login window")
             if state:
-                state = findTemplateFile("/etc/X11/fly-dm/Xaccess", "localhost    CHOOSER BROADCAST	#any indirect host can get a chooser")
+                state = findTemplateFile("/etc/X11/fly-dm/Xaccess",
+                                         "localhost    CHOOSER BROADCAST	#any indirect host can get a chooser")
             if state:
                 self.name_ui.label_remote_session_2.setText("Статус: \tВыключен")
                 self.name_ui.label_remote_session_2.setStyleSheet("QLabel { background-color: Tomato }")
@@ -396,6 +433,30 @@ class MainSettingsModule(object):
             self.name_ui.label_resolv_state.setStyleSheet("QLabel { background-color: lightgreen }")
             self.name_ui.checkBox_resolv.setDisabled(True)
 
+    def currentStateSudo(self):
+        file = "/etc/sudoers"
+        current_name_user = os.getlogin()
+        template = "{} ALL=(ALL) NOPASSWD: ALL".format(current_name_user)  # Шаблон поиска
+
+        fp = FileProcess(file)  # Инициализируем внешний класс из папки модули
+        state = fp.findString(template=template)
+
+        txt, color = None, None
+        if state == 0:
+            txt = "Статус: \tНастроен"
+            color = "QLabel { background-color: lightgreen }"
+        elif state == 1:
+            txt = "Статус: \tНе настроен"
+            color = "QLabel { background-color: Tomato }"
+        elif state is None:
+            color = "QLabel { background-color: Orange }"
+            txt = "Статус: не удалось определить"
+            self.name_ui.checkBox_sudo.setDisabled(True)
+        self.name_ui.label_sudo_state.setText(txt)
+        self.name_ui.label_sudo_state.setStyleSheet(color)
+
+        return state
+
     def clickPushbuttonApply(self):
         print("Нажата кнопка применить...")
         cur_user = self.name_ui.comboBox_nameuser.currentText()
@@ -426,7 +487,8 @@ class MainSettingsModule(object):
                     self.__applySuperUser()
                 self.currentStateSuperUser()
             else:
-                QMessageBox.critical(self.obj_win, "Ошибка!", "Пароли введенные для суперпользоватея не совпадают!", QMessageBox.Ok)
+                QMessageBox.critical(self.obj_win, "Ошибка!",
+                                     "Пароли введенные для суперпользоватея не совпадают!", QMessageBox.Ok)
         if self.name_ui.checkBox_ssh.isChecked():
             if self.name_ui.radioButton_ssh_enable.isChecked():
                 self.__applySSH(action="enable")
@@ -449,9 +511,15 @@ class MainSettingsModule(object):
             if self.name_ui.radioButton_resolv.isChecked():
                 self.__applySetResolv()
                 self.currentStateResolv()
+        if self.name_ui.checkBox_sudo.isChecked():
+            if self.name_ui.radioButton_sudo_enabled.isChecked():
+                self.__applySetSudo(action="enable")
+            elif self.name_ui.radioButton_sudo_disabled.isChecked():
+                self.__applySetSudo(action="disable")
+            self.currentStateSudo()
 
     def __applyAutologinDebian(self, action=None, cur_user=None):
-        # Вкючаем автозагрузку
+        # Включаем автозагрузку
         s1 = None
         s2 = None
         if action == "Enable":
@@ -476,14 +544,14 @@ class MainSettingsModule(object):
                 QMessageBox.information(self.obj_win, "Успех!", "Настройка автовхода выполнена успешно!", QMessageBox.Ok)
 
     def __applyAutologinAstra(self, action=None, cur_user=None, cur_mac=None):
-        # Вкючаем автозагрузку
+        # Включаем автозагрузку
         s1 = None
         s2 = None
         s3 = None
         if action == "Enable":
             s1 = "AutoLoginEnable=true"
             s2 = "AutoLoginUser={}".format(cur_user)
-            s3 = "AutoLoginMAC=0:"+cur_mac+":0"
+            s3 = "AutoLoginMAC=0:" + cur_mac + ":0"
         # Отключаем автозагрузку
         elif action == "Disable":
             s1 = "#AutoLoginEnable=false"
@@ -515,10 +583,9 @@ class MainSettingsModule(object):
                 if return_code:
                     QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка перезапуска сетевой службы!", QMessageBox.Ok)
                 else:
-                    # if os.path.isfile("/etc/xdg/autostart/nm-applet.desktop.disabled"):
                     if not os.path.isfile("/etc/xdg/autostart/nm-applet.desktop"):
-                        # return_code = runProcess("sudo mv -f /etc/xdg/autostart/nm-applet.desktop.disabled /etc/xdg/autostart/nm-applet.desktop", returncode=True)
-                        return_code = runProcess("sudo cp /usr/share/applications/nm-applet.desktop /etc/xdg/autostart/nm-applet.desktop",
+                        return_code = runProcess("sudo cp /usr/share/applications/nm-applet.desktop "
+                                                 "/etc/xdg/autostart/nm-applet.desktop",
                                                  returncode=True)
                         if return_code:
                             QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка добавления значка!", QMessageBox.Ok)
@@ -527,12 +594,13 @@ class MainSettingsModule(object):
                     else:
                         QMessageBox.information(self.obj_win, "Сообщение!", "Включение апплета выполнено успешно!")
 
-                    ask = QMessageBox.information(self.obj_win, "", "Перезапустить графическую сесию?",
+                    ask = QMessageBox.information(self.obj_win, "", "Перезапустить графическую сессию?",
                                                   QMessageBox.Cancel | QMessageBox.Ok, QMessageBox.Cancel)
                     if ask == QMessageBox.Ok:
                         return_code = runProcess("sudo systemctl restart fly-dm", returncode=True)
                         if return_code:
-                            QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка перезапуска графической сесии!", QMessageBox.Ok)
+                            QMessageBox.critical(self.obj_win, "Ошибка!",
+                                                 "Ошибка перезапуска графической сессии!", QMessageBox.Ok)
         elif action == "Disabled":
             return_code = runProcess("sudo systemctl --now mask NetworkManager", returncode=True)
             if return_code != 0:
@@ -544,7 +612,6 @@ class MainSettingsModule(object):
                 else:
                     # if os.path.isfile("/etc/xdg/autostart/nm-applet.desktop"):
                     if os.path.isfile("/etc/xdg/autostart/nm-applet.desktop"):
-                        # return_code = runProcess("sudo mv -f /etc/xdg/autostart/nm-applet.desktop /etc/xdg/autostart/nm-applet.desktop.disabled", returncode=True)
                         return_code = runProcess("sudo rm -rf /etc/xdg/autostart/nm-applet.desktop",
                                                  returncode=True)
                         if return_code != 0:
@@ -553,20 +620,21 @@ class MainSettingsModule(object):
                             QMessageBox.information(self.obj_win, "Сообщение!", "Отключение апплета выполнено успешно!")
                     else:
                         QMessageBox.information(self.obj_win, "Сообщение!", "Отключение апплета выполнено успешно!")
-                    ask = QMessageBox.information(self.obj_win, "", "Перезапустить графическую сесию?",
+                    ask = QMessageBox.information(self.obj_win, "", "Перезапустить графическую сессию?",
                                                   QMessageBox.Cancel | QMessageBox.Ok, QMessageBox.Cancel)
                     if ask == QMessageBox.Ok:
                         return_code = runProcess("sudo systemctl restart fly-dm", returncode=True)
                         if return_code != 0:
-                            QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка перезапуска графической сесии!", QMessageBox.Ok)
+                            QMessageBox.critical(self.obj_win, "Ошибка!",
+                                                 "Ошибка перезапуска графической сессии!", QMessageBox.Ok)
 
     def __applySuperUser(self, os_ver=None):
         err_status = 0
         password = self.name_ui.lineEdit_pass.text().encode()  # Представление в байтовом режиме
         proc = subprocess.Popen(['/usr/bin/sudo', 'passwd', 'root'],
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
         proc.stdin.write(password + b"\n" + password + b"\n")
         proc.stdin.flush()
         proc.communicate()
@@ -602,13 +670,14 @@ class MainSettingsModule(object):
                         else:
                             return_code = runProcess("sudo systemctl start ssh", returncode=True)
                             if return_code != 0:
-                                QMessageBox.critical(self.obj_win, "Ошибка SSH!", "Ошибка запукска службы ssh!", QMessageBox.Ok)
+                                QMessageBox.critical(self.obj_win, "Ошибка SSH!", "Ошибка запуска службы ssh!", QMessageBox.Ok)
                             else:
                                 return_code = runProcess("sudo systemctl enable ssh", returncode=True)
                                 if return_code != 0:
-                                    QMessageBox.critical(self.obj_win, "Ошибка SSH!", "Ошибка добавления службы ssh в автозагрузку!", QMessageBox.Ok)
+                                    QMessageBox.critical(self.obj_win, "Ошибка SSH!",
+                                                         "Ошибка добавления службы ssh в автозагрузку!", QMessageBox.Ok)
                                 else:
-                                    QMessageBox.information(self.obj_win, "Информация!", "Настройка SSH выолнена успешно!")
+                                    QMessageBox.information(self.obj_win, "Информация!", "Настройка SSH выполнена успешно!")
         elif action == "restore":
             out, err = copyFile("/etc/ssh/ssh_config.", "/etc/ssh/ssh_config.PNOSKO.bak", copying_reverse=True)
             if err:
@@ -618,7 +687,8 @@ class MainSettingsModule(object):
                 if err:
                     QMessageBox.critical(self.obj_win, "Ошибка!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
                 else:
-                    QMessageBox.information(self.obj_win, "Успех!", "Настройки SSH успешно востановлены из резервной копии!", QMessageBox.Ok)
+                    QMessageBox.information(self.obj_win, "Успех!", "Настройки SSH успешно восстановлены из резервной копии!",
+                                            QMessageBox.Ok)
 
     def __applySetTime(self, action=None):
         returncode = None
@@ -656,7 +726,9 @@ class MainSettingsModule(object):
             if err:
                 QMessageBox.critical(self.obj_win, "Ошибка!", "{}".format(err.decode("utf-8")), QMessageBox.Ok)
             else:
-                QMessageBox.information(self.obj_win, "Успех!", "{}".format("Настройка пункта меню выхода 'Удалённая сесиия' выполнена успешно!"), QMessageBox.Ok)
+                QMessageBox.information(self.obj_win, "Успех!",
+                                        "{}".format("Настройка пункта меню выхода 'Удалённая сессия' выполнена успешно!"),
+                                        QMessageBox.Ok)
 
     def __applySetResolv(self):
         file_tmp = "/tmp/temp.tmp"
@@ -677,5 +749,44 @@ class MainSettingsModule(object):
                         ft.writelines(line)
                 if not comp_state:
                     ft.writelines("127.0.1.1\t{}\n".format(computer_name))
-        out, err = runProcess("sudo cp {} {}".format(file_tmp, file))
+        runProcess("sudo cp {} {}".format(file_tmp, file))
         QMessageBox.information(self.obj_win, "Успех!", "Успешно настроен файл hosts", QMessageBox.Ok)
+
+    def __applySetSudo(self, action=None):
+        state = self.currentStateSudo()
+
+        if action == "enable":
+            if state:
+                self.__enableSudo()
+            elif not state:
+                QMessageBox.information(self.obj_win, "sudo",
+                                        "Выполнение команд через sudo без пароля уже настроен!", QMessageBox.Ok)
+        elif action == "disable":
+            if state:
+                self.__disableSudo()
+            elif not state:
+                QMessageBox.information(self.obj_win, "sudo",
+                                        "Ограничение выполнения команд через sudo по паролю уже настроено в системе!",
+                                        QMessageBox.Ok)
+
+    def __enableSudo(self):
+        file = "/etc/sudoers"
+        new_str = None
+        current_name_user = os.getlogin()
+        txt = "{} ALL=(ALL) NOPASSWD: ALL".format(current_name_user)
+        fp = FileProcess(file)  # Инициализируем внешний класс из папки модули
+        fp.createPNOSKOBakFile()
+        out = fp.addStringEndFile(txt)
+        if not out:
+            txt = "Настройка sudo выполнена успешно"
+        elif out:
+            txt = "Ошибка при настройке"
+        QMessageBox.information(self.obj_win, "sudo",
+                                txt, QMessageBox.Ok)
+
+    def __disableSudo(self):
+        file = "/etc/sudoers"
+        current_name_user = os.getlogin()
+        template = "{} ALL=(ALL) NOPASSWD: ALL".format(current_name_user)
+
+        changeFileNew(file, template, "")

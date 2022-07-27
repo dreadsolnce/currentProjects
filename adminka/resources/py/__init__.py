@@ -11,3 +11,4 @@ from .ChangeSettingsModule import ChangeSettingsEthernet
 from .SshDesktopVnc import Ui_SshDesktopVnc
 
 from .windows import *
+from .modules import *

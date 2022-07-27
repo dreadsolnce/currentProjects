@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
-    def setupUi(self, MainWindow, width=921, height=537):
+    def setupUi(self, MainWindow, width=1024, height=768):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(width, height)
         MainWindow.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)

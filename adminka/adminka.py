@@ -70,8 +70,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_pxe = resources.Ui_MainPxeWindow()
         self.remote_settings = resources.Ui_RemoteSettingsWindow()
 
-        self.width = 1300
-        self.height = 600
+        self.width = 1200
+        self.height = 800
 
         self.checkCurrentOs()
         self.mainWin()
@@ -132,6 +132,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_settings.checkBox_time.clicked.connect(self.msm.clickSetTimeMode)
         self.main_settings.checkBox_remote_session.clicked.connect(self.msm.clickSetRemoteSession)
         self.main_settings.checkBox_resolv.clicked.connect(self.msm.clickSetResolv)
+        self.main_settings.checkBox_sudo.clicked.connect(self.msm.clickSetSudo)
         self.main_settings.pushButton_apply.clicked.connect(self.msm.clickPushbuttonApply)
         self.main_settings.checkBox_all.clicked.connect(self.pm.clkCheckbox)
         self.main_settings.pushButton_insprog.clicked.connect(lambda: self.pm.clkPushButtonProgram(action="install"))
