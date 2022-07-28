@@ -20,18 +20,26 @@ def runProcess(command=None, returncode=False):
     return out, err
 
 
-def stateAutoLogin(file, template):
+def stateAutoLogin(file, template, ver_os=None):
     with open(file, 'r') as f:
-        name_user = None
         exit_code = False
+        name_user = None
         for line in f:
             if template in line:
-                list_line = list(line.split())
+                if ver_os == "Ubuntu 22.04":
+                    list_line = list(line.split("="))
+                else:
+                    list_line = list(line.split())
                 for i in list_line:
-                    if i == template and list_line[0] == template:
-                        exit_code = True
-                        name_user = list_line[2]
-                        break
+                    if template == "AutomaticLoginEnable":
+                        if i.strip() == template and list_line[0].strip() == template and list_line[1].lower().strip() == "true":
+                            exit_code = True
+                            break
+                    elif template == "AutomaticLogin":
+                        if i.strip() == template and list_line[0].strip() == template:
+                            exit_code = True
+                            name_user = list_line[1]
+                            break
     return exit_code, name_user
 
 
@@ -334,15 +342,15 @@ class MainSettingsModule(object):
         # Если текущая ОС принадлежит ubuntu, то определяем статус автозагрузки применяя соответствующие
         # функции: stateAutoLogin и userAutoLogin
         elif self.os_ver in self.os_debian:
-            state_autologin, name_user_login = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLoginEnable")
+            state_autologin, name_user_login = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLoginEnable", self.os_ver)
             if not state_autologin:
                 self.name_ui.label_autologin.setText('Статус: \tВыключен')
                 self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: Tomato }")
             else:
-                state_user_login, name_user = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLogin")
+                state_user_login, name_user = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLogin", self.os_ver)
                 if state_user_login:
                     # name_user = userAutoLogin("/etc/gdm3/custom.conf", "AutomaticLogin")
-                    self.name_ui.label_autologin.setText('Статус: \tВключён. Пользователь {}'.format(name_user))
+                    self.name_ui.label_autologin.setText('Статус: \tВключён. Пользователь {}'.format(name_user.strip()))
                     self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: lightgreen }")
 
     def currentStateNetworkManager(self):
@@ -754,7 +762,6 @@ class MainSettingsModule(object):
 
     def __applySetSudo(self, action=None):
         state = self.currentStateSudo()
-
         if action == "enable":
             if state:
                 self.__enableSudo()
@@ -762,31 +769,44 @@ class MainSettingsModule(object):
                 QMessageBox.information(self.obj_win, "sudo",
                                         "Выполнение команд через sudo без пароля уже настроен!", QMessageBox.Ok)
         elif action == "disable":
-            if state:
+            if not state:
                 self.__disableSudo()
-            elif not state:
+            elif state:
                 QMessageBox.information(self.obj_win, "sudo",
                                         "Ограничение выполнения команд через sudo по паролю уже настроено в системе!",
                                         QMessageBox.Ok)
 
     def __enableSudo(self):
         file = "/etc/sudoers"
-        new_str = None
         current_name_user = os.getlogin()
         txt = "{} ALL=(ALL) NOPASSWD: ALL".format(current_name_user)
         fp = FileProcess(file)  # Инициализируем внешний класс из папки модули
         fp.createPNOSKOBakFile()
         out = fp.addStringEndFile(txt)
-        if not out:
+        if out[0] == 0:
             txt = "Настройка sudo выполнена успешно"
-        elif out:
-            txt = "Ошибка при настройке"
+        elif out[0] != 0:
+            if out[0] == "error_except":
+                txt = out[1]
+            else:
+                txt = "Ошибка при настройке"
         QMessageBox.information(self.obj_win, "sudo",
                                 txt, QMessageBox.Ok)
 
     def __disableSudo(self):
         file = "/etc/sudoers"
         current_name_user = os.getlogin()
-        template = "{} ALL=(ALL) NOPASSWD: ALL".format(current_name_user)
-
-        changeFileNew(file, template, "")
+        txt = "{} ALL=(ALL) NOPASSWD: ALL".format(current_name_user)
+        fp = FileProcess(file)  # Инициализируем внешний класс из папки модули
+        fp.createPNOSKOBakFile()
+        out = fp.delStringsFile(txt)
+        print("out = " + str(out))
+        if out[0] == 0:
+            txt = "Настройка sudo выполнена успешно"
+        elif out[0] != 0:
+            if out[0] == "error_except":
+                txt = out[1]
+            else:
+                txt = "Ошибка при настройке"
+        QMessageBox.information(self.obj_win, "sudo",
+                                txt, QMessageBox.Ok)

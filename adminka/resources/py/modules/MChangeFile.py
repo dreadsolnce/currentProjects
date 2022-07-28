@@ -5,6 +5,27 @@ import subprocess
 fileTemp = "/tmp/file.tmp"  # Временный файл
 
 
+# Получение атрибутов файла (разрешения, владелец)
+def attrFile(file=None):
+    command = "ls -al " + file + " | awk '{print $1,$3,$4}'"
+    out = runProcess(command)
+    result = out[1]
+    print("\nФайл: " + format(file) + "\n")
+    print("Разрешения для владельца: " + result.split()[0][1:4])
+    print("Разрешения для группы: " + result.split()[0][4:7])
+    print("Разрешения для остальных: " + result.split()[0][7:10])
+    print("---------------------------------------------------")
+    print("Владелец:" + result.split()[1])
+    print("Группа:" + result.split()[2])
+
+
+# Копирование обрабатываемого файла во временную папку, для его обработки
+def copyFileToTmp(file=None):
+    command = "sudo cp -pf {} {}".format(file, fileTemp)
+    return_code, stdout, stderr = runProcess(command)
+    return return_code, stdout, stderr
+
+
 # Запуск терминальной команды с выводом: кода выхода, выходных данных, описания ошибки
 def runProcess(command=None):
     if command:
@@ -18,10 +39,10 @@ def runProcess(command=None):
         print("Ошибка параметра при запросе функции!")
 
 
-# Копирование обрабатываемого файла во временную папку, для его обработки
-def copyFileToTmp(file=None):
-    # Копируем файл во временную папку, во избежание возникновения ошибки Permission Denied
-    command = "sudo cp {} {} ; sudo chmod 644 {}".format(file, fileTemp, fileTemp)
+# Копируются только атрибуты файла, но не содержимое. Необходимо,
+# чтобы у временного файла сохранялись атрибуты исходного файла.
+def copyAttrFile(file=None):
+    command = "sudo cp -f --attributes-only {} {}".format(file, fileTemp)
     return_code, stdout, stderr = runProcess(command)
     return return_code, stdout, stderr
 
@@ -82,7 +103,7 @@ class FileProcess(object):
 
     # Функция добавления строки в конец файла
     def addStringEndFile(self, addstr=None):
-        copyFileToTmp(self.file)
+        copyAttrFile(self.file)
         count = 0
         count_clear_line = 0
         try:
@@ -118,12 +139,35 @@ class FileProcess(object):
 
             command = "sudo mv -f {} {}".format(fileTemp, self.file)
             out_data = runProcess(command)
-            return out_data[0]
+            return out_data
 
         except (PermissionError, FileNotFoundError) as e:
             print("Ошибка в функции emptyLine: " + str(e))
+            return ['error_except', str(e)]
+
+    # Функция удаления строк, совпадающих с шаблоном строки
+    def delStringsFile(self, delstr=None):
+        copyAttrFile(self.file)
+        try:
+            with open(fileTemp, "w") as ft:
+                f = open(self.file, "r")
+                while True:
+                    line = f.readline()
+                    if " ".join(line.split()) == " ".join(delstr.split()):
+                        pass
+                    else:
+                        ft.writelines(line)
+                    if not line:
+                        break
+                f.close()
+
+            command = "sudo mv -f {} {}".format(fileTemp, self.file, self.file)
+            out_data = runProcess(command)
+            return out_data
+        except (PermissionError, FileNotFoundError) as e:
+            print("Ошибка в функции emptyLine: " + str(e))
+            return ['error_except', str(e)]
 
 
 if __name__ == '__main__':
     fp = FileProcess("/etc/sudoers")
-
