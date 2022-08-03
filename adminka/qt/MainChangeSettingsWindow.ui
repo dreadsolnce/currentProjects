@@ -364,7 +364,7 @@
      <x>0</x>
      <y>0</y>
      <width>870</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_LocalSettings">
@@ -387,6 +387,9 @@
     <property name="title">
      <string>Сканер сети</string>
     </property>
+    <addaction name="action_Scanner"/>
+    <addaction name="action_NetworkDevice"/>
+    <addaction name="action_Authorization"/>
    </widget>
    <addaction name="menu_LocalSettings"/>
    <addaction name="menu_RemoteSettings"/>
@@ -431,6 +434,30 @@
    </property>
    <property name="statusTip">
     <string>Установка и настройка PXE сервера</string>
+   </property>
+  </action>
+  <action name="action_Scanner">
+   <property name="text">
+    <string>Сканер</string>
+   </property>
+   <property name="statusTip">
+    <string>Позволяет выполнить сканирование сети</string>
+   </property>
+  </action>
+  <action name="action_NetworkDevice">
+   <property name="text">
+    <string>Список устройств</string>
+   </property>
+   <property name="statusTip">
+    <string>Отображает список сетевых устройств в сети</string>
+   </property>
+  </action>
+  <action name="action_Authorization">
+   <property name="text">
+    <string>Авторизация</string>
+   </property>
+   <property name="statusTip">
+    <string>Проверка и ввод данных для получения доступа к удалённым устройствам</string>
    </property>
   </action>
  </widget>

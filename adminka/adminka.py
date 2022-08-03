@@ -63,12 +63,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.csnh = None  # Объект resources.ChangeSettingsNameHost
         self.cse = None  # Объект resources.ChangeSettingsEthernet
         self.pxem = None  # Объект resources.MainPxeModule
+        self.scn = None  # Объект resources.Scanner
 
         self.gui = resources.Ui_MainWindow()
         self.main_settings = resources.Ui_MainSettingsWindow()
         self.main_change_settings = resources.Ui_MainChangeSettingsWindow()
         self.main_pxe = resources.Ui_MainPxeWindow()
         self.remote_settings = resources.Ui_RemoteSettingsWindow()
+        self.scanner = resources.Ui_ScannerWindow()
 
         self.width = 1200
         self.height = 800
@@ -104,6 +106,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.gui.action_ChangeSettings.triggered.connect(self.MenuMainChangeSettingsWindows)
         self.gui.action_PXE.triggered.connect(self.MenuPxeWindows)
         self.gui.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
+        self.gui.action_Scanner.triggered.connect(self.MenuScanner)
         self.gui.action_Exit.triggered.connect(lambda: sys.exit())
 
     def MenuMainSettingsWindows(self):
@@ -203,12 +206,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_change_settings.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
         self.main_change_settings.action_Exit.triggered.connect(lambda: sys.exit())
 
+    def MenuScanner(self):
+        print("Выбрано меню Сканер сети > Сканер")
+        self.scn = QtWidgets.QMainWindow()
+        self.scanner.setupUi(self.scn)
+        self.winCenter(self.scn)
+        self.scn.show()
+
+        # self.scanner.label_pxe_picture.setPixmap(QtGui.QPixmap(pxe_picture))
+
     # Центрирование окна относительно экрана
-    def winCenter(self):
-        qr = self.frameGeometry()
-        qp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(qp)
-        self.move(qr.topLeft())
+    def winCenter(self, obj=None):
+        if obj:
+            qr = obj.frameGeometry()
+            qp = QDesktopWidget().availableGeometry().center()
+            qr.moveCenter(qp)
+            obj.move(qr.topLeft())
+        else:
+            qr = self.frameGeometry()
+            qp = QDesktopWidget().availableGeometry().center()
+            qr.moveCenter(qp)
+            self.move(qr.topLeft())
 
     # Событие при изменении размера окна
     def resizeEvent(self, event):
@@ -312,6 +330,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     test_lib()
     import resources
+
     a = resources.CheckSudo()
     a2 = MainWindow()
     sys.exit(app.exec_())

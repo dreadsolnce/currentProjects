@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'qt/MainSettingsWindow.ui'
+# Form implementation generated from reading ui file 'MainSettingsWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.6
 #
@@ -17,7 +17,7 @@ class Ui_MainSettingsWindow(object):
         MainSettingsWindow.resize(width, height)
         MainSettingsWindow.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("qt/../resources/ico/logo.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("../resources/ico/logo.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainSettingsWindow.setWindowIcon(icon)
         MainSettingsWindow.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.centralwidget = QtWidgets.QWidget(MainSettingsWindow)
@@ -539,12 +539,21 @@ class Ui_MainSettingsWindow(object):
         self.action_ChangeSettings.setObjectName("action_ChangeSettings")
         self.action_PXE = QtWidgets.QAction(MainSettingsWindow)
         self.action_PXE.setObjectName("action_PXE")
+        self.action_Scanner = QtWidgets.QAction(MainSettingsWindow)
+        self.action_Scanner.setObjectName("action_Scanner")
+        self.action_NetworkDevice = QtWidgets.QAction(MainSettingsWindow)
+        self.action_NetworkDevice.setObjectName("action_NetworkDevice")
+        self.action = QtWidgets.QAction(MainSettingsWindow)
+        self.action.setObjectName("action")
         self.menu_LocalSettings.addAction(self.action_MainSettings)
         self.menu_LocalSettings.addAction(self.action_ChangeSettings)
         self.menu_LocalSettings.addAction(self.action_PXE)
         self.menu_LocalSettings.addSeparator()
         self.menu_LocalSettings.addAction(self.action_Exit)
         self.menu_RemoteSettings.addAction(self.action_OpenRemoteSettings)
+        self.menu_NetworkScanner.addAction(self.action_Scanner)
+        self.menu_NetworkScanner.addAction(self.action_NetworkDevice)
+        self.menu_NetworkScanner.addAction(self.action)
         self.menubar.addAction(self.menu_LocalSettings.menuAction())
         self.menubar.addAction(self.menu_RemoteSettings.menuAction())
         self.menubar.addAction(self.menu_NetworkScanner.menuAction())
@@ -645,3 +654,9 @@ class Ui_MainSettingsWindow(object):
         self.action_ChangeSettings.setStatusTip(_translate("MainSettingsWindow", "Включает в себя настройку индивидуальных параметров системы таких как имя компьютера, сетевые настройки и т.д."))
         self.action_PXE.setText(_translate("MainSettingsWindow", "Настройка PXE сервера"))
         self.action_PXE.setStatusTip(_translate("MainSettingsWindow", "Установка и настройка PXE сервера"))
+        self.action_Scanner.setText(_translate("MainSettingsWindow", "Сканер"))
+        self.action_Scanner.setStatusTip(_translate("MainSettingsWindow", "Позволяет выполнить сканирование сети"))
+        self.action_NetworkDevice.setText(_translate("MainSettingsWindow", "Список устройств"))
+        self.action_NetworkDevice.setStatusTip(_translate("MainSettingsWindow", "Отображает список сетевых устройств в сети"))
+        self.action.setText(_translate("MainSettingsWindow", "Авторизация"))
+        self.action.setStatusTip(_translate("MainSettingsWindow", "Проверка и ввод данных для получения доступа к удалённым устройствам"))
