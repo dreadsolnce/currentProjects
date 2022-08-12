@@ -41,7 +41,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="label_Scanner_startip">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -74,7 +74,7 @@
      </widget>
     </item>
     <item row="0" column="1" colspan="4">
-     <widget class="QLineEdit" name="lineEdit">
+     <widget class="QLineEdit" name="lineEdit_Scanner_startip">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -101,7 +101,7 @@
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QLabel" name="label_2">
+     <widget class="QLabel" name="label_Scanner_finishedip">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -128,7 +128,7 @@
      </widget>
     </item>
     <item row="1" column="1" colspan="4">
-     <widget class="QLineEdit" name="lineEdit_2">
+     <widget class="QLineEdit" name="lineEdit_Scanner_finishedip">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -155,14 +155,14 @@
      </widget>
     </item>
     <item row="2" column="0" colspan="5">
-     <widget class="Line" name="line">
+     <widget class="Line" name="line_Scanner">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item row="3" column="4">
-     <widget class="QPushButton" name="pushButton_2">
+     <widget class="QPushButton" name="pushButton_Scanner_Cancel">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
         <horstretch>0</horstretch>
@@ -187,7 +187,7 @@
      </widget>
     </item>
     <item row="3" column="3">
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="pushButton_Scanner_Start">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
         <horstretch>0</horstretch>

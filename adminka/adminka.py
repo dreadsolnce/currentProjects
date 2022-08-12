@@ -63,13 +63,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.csnh = None  # Объект resources.ChangeSettingsNameHost
         self.cse = None  # Объект resources.ChangeSettingsEthernet
         self.pxem = None  # Объект resources.MainPxeModule
-        self.scn = None  # Объект resources.Scanner
+        # self.scn = resources.ScannerNetwork()
+        self.scn = None
 
         self.gui = resources.Ui_MainWindow()
         self.main_settings = resources.Ui_MainSettingsWindow()
         self.main_change_settings = resources.Ui_MainChangeSettingsWindow()
         self.main_pxe = resources.Ui_MainPxeWindow()
         self.remote_settings = resources.Ui_RemoteSettingsWindow()
+        self.scn_gui = QtWidgets.QMainWindow()  # Новый объект окна сканера сети
         self.scanner = resources.Ui_ScannerWindow()
 
         self.width = 1200
@@ -146,6 +148,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_settings.action_ChangeSettings.triggered.connect(self.MenuMainChangeSettingsWindows)
         self.main_settings.action_PXE.triggered.connect(self.MenuPxeWindows)
         self.main_settings.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
+        self.main_settings.action_Scanner.triggered.connect(self.MenuScanner)
         self.main_settings.action_Exit.triggered.connect(lambda: sys.exit())
 
     def MenuPxeWindows(self):
@@ -170,6 +173,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_pxe.action_MainSettings.triggered.connect(self.MenuMainSettingsWindows)
         self.main_pxe.action_ChangeSettings.triggered.connect(self.MenuMainChangeSettingsWindows)
         self.main_pxe.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
+        self.main_pxe.action_Scanner.triggered.connect(self.MenuScanner)
         self.main_pxe.action_Exit.triggered.connect(lambda: sys.exit())
 
     def MenuRemoteSettingsWindows(self):
@@ -182,6 +186,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.remote_settings.action_MainSettings.triggered.connect(self.MenuMainSettingsWindows)
         self.remote_settings.action_ChangeSettings.triggered.connect(self.MenuMainChangeSettingsWindows)
         self.remote_settings.action_PXE.triggered.connect(self.MenuPxeWindows)
+        self.remote_settings.action_Scanner.triggered.connect(self.MenuScanner)
         self.remote_settings.action_Exit.triggered.connect(lambda: sys.exit())
 
     def MenuMainChangeSettingsWindows(self):
@@ -204,16 +209,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_change_settings.action_MainSettings.triggered.connect(self.MenuMainSettingsWindows)
         self.main_change_settings.action_PXE.triggered.connect(self.MenuPxeWindows)
         self.main_change_settings.action_OpenRemoteSettings.triggered.connect(self.MenuRemoteSettingsWindows)
+        self.main_change_settings.action_Scanner.triggered.connect(self.MenuScanner)
         self.main_change_settings.action_Exit.triggered.connect(lambda: sys.exit())
 
     def MenuScanner(self):
         print("Выбрано меню Сканер сети > Сканер")
-        self.scn = QtWidgets.QMainWindow()
-        self.scanner.setupUi(self.scn)
-        self.winCenter(self.scn)
-        self.scn.show()
+        self.scanner.setupUi(self.scn_gui)
+        self.winCenter(self.scn_gui)
+        self.scn_gui.show()
+        # self.scn = resources.ScannerNetworkModule(obj_win=self.scanner)
+        self.scn = resources.ScannerNetworkModule(obj_win=self.scanner, obj_win_gui=self.scn_gui)
+        self.actionMenuScanner()
 
-        # self.scanner.label_pxe_picture.setPixmap(QtGui.QPixmap(pxe_picture))
+    def actionMenuScanner(self):
+        self.scanner.pushButton_Scanner_Cancel.clicked.connect(lambda: self.scn_gui.close())
+        self.scanner.pushButton_Scanner_Start.clicked.connect(self.scn.correctInput)
+
+    # def pushButtonStartScan(self):
+    #     self.scn = resources.ScannerNetwork(self.scanner.lineEdit_Scanner_startip.text(),
+    #                                         self.scanner.lineEdit_Scanner_finishedip.text())
 
     # Центрирование окна относительно экрана
     def winCenter(self, obj=None):
