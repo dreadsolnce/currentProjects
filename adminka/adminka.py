@@ -53,7 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.name_debian = ["Ubuntu 21.04", "Ubuntu 21.10", "Ubuntu 22.04"]  # Список поддерживаемых ОС семейства Ubuntu
+        self.name_debian = ["Ubuntu 21.04", "Ubuntu 21.10", "Ubuntu 22.04", "Ubuntu 22.10"]  # Список поддерживаемых ОС семейства Ubuntu
         self.name_astra = ['"AstraLinuxSE" 1.6']  # Список поддерживаемы ОС семейства AstraLinux
 
         self.os_ver = resources.OsVersion()  # Версия ОС
