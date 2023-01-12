@@ -9,6 +9,7 @@ class ScannerNetwork(object):
         self.finished_ip = finished_ip
         if self.start_ip and self.finished_ip:
             self.correctInput()
+        print("asdkjasldj"+self.start_ip)
 
     def correctInput(self):
         start_ip_spl = self.start_ip.split('.')[3]

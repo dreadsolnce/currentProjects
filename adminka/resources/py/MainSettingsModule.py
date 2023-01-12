@@ -342,16 +342,20 @@ class MainSettingsModule(object):
         # Если текущая ОС принадлежит ubuntu, то определяем статус автозагрузки применяя соответствующие
         # функции: stateAutoLogin и userAutoLogin
         elif self.os_ver in self.os_debian:
-            state_autologin, name_user_login = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLoginEnable", self.os_ver)
-            if not state_autologin:
-                self.name_ui.label_autologin.setText('Статус: \tВыключен')
-                self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: Tomato }")
+            if os.path.isfile('/etc/gdm3/custom.conf'):
+                state_autologin, name_user_login = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLoginEnable", self.os_ver)
+                if not state_autologin:
+                    self.name_ui.label_autologin.setText('Статус: \tВыключен')
+                    self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: Tomato }")
+                else:
+                    state_user_login, name_user = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLogin", self.os_ver)
+                    if state_user_login:
+                        # name_user = userAutoLogin("/etc/gdm3/custom.conf", "AutomaticLogin")
+                        self.name_ui.label_autologin.setText('Статус: \tВключён. Пользователь {}'.format(name_user.strip()))
+                        self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: lightgreen }")
             else:
-                state_user_login, name_user = stateAutoLogin("/etc/gdm3/custom.conf", "AutomaticLogin", self.os_ver)
-                if state_user_login:
-                    # name_user = userAutoLogin("/etc/gdm3/custom.conf", "AutomaticLogin")
-                    self.name_ui.label_autologin.setText('Статус: \tВключён. Пользователь {}'.format(name_user.strip()))
-                    self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: lightgreen }")
+                self.name_ui.label_autologin.setText('Статус: \tне удалось определить')
+                self.name_ui.label_autologin.setStyleSheet("QLabel { background-color: Orange }")
 
     def currentStateNetworkManager(self):
         if self.os_ver in self.os_astra:
