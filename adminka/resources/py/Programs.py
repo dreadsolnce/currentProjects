@@ -65,7 +65,8 @@ class Programs(QtWidgets.QDialog):
         command_vnc5viewer = "dpkg --list | grep realvnc-vnc-viewer | awk '{print $3}' | grep '5.3.3' >/dev/null; echo $?"
         # Команда для ярлыков программы vnc
         # command_vnc_desktop = "ls -al ~/Desktop/ | grep _SSH.desktop | grep VNC >/dev/null; echo $?"
-        command_vnc_desktop = "find /home/`logname/Desktop` -name 'VNC*' >/dev/null; echo $?"
+        # command_vnc_desktop = "find /home/`logname`/Desktop/ -name 'VNC*' >/dev/null; echo $?"
+        command_vnc_desktop = "ls /home/`logname`/Desktop/ | grep 'VNC*' >/dev/null; echo $?"
         # Команда для qemu
         command_qemu = "dpkg-query -L qemu-system-x86 >/dev/null; echo $?"
 
