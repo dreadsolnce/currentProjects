@@ -82,8 +82,8 @@ x_f2=$((x_frame-max_length_f2*9))
     # ОТОБРАЖЕНИЕ ИНФОРМАЦИИ ИЗ ФАЙЛА 3
 
 > $file3
-name_dev=(eth0 eth1)
-for n in $name_dev
+name_dev=(eth0 eth1 eth2 eth3 eth4 eth5)
+for n in ${name_dev[*]}
 do
     #/sbin/ifconfig eth0 | grep -w inet > /dev/null 
     /sbin/ifconfig $n | grep -w inet > /dev/null 
@@ -106,7 +106,7 @@ do
 	#echo "IP адрес eth0:" `ip -f inet -c a | grep eth0 | awk '{print $2}'` > $file3
 	else
 	    #echo "IP адрес eth0: Нет подключения!" >> $file3
-	    echo "IP адрес $n: Нет подключения!" >> $file3
+	    echo "IP адрес $n: Нет подключения!" # >> $file3
 	fi
 done
 #/sbin/ifconfig eth1 | grep -w inet > /dev/null 
