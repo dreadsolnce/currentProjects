@@ -276,7 +276,7 @@ class TimerMessageBox(QMessageBox, threading.Thread):
 def test_lib():
     list_lib = ['python3-six', 'python3-urllib3', 'python3-cffi-backend', 'python3-idna', 'python3-pkg-resources',
                 'python3-setuptools', 'python3-pyasn1', 'python3-cryptography', 'python3-paramiko', 'python3-chardet',
-                'python3-requests', 'python3-bs4']
+                'python3-requests', 'python3-bs4', 'python-ipaddress']
     os_ver = os_version()  # Версия ОС
     # Делаем общую проверку на наличие библиотек, если тест не проходит, то выполняем проверку по каждому элементу из списка
     ret = check_lib_all(list_lib)
