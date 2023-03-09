@@ -41,10 +41,10 @@ class Programs(QtWidgets.QDialog):
         if self.os_ver in self.name_debian:
             self.list_program = ["pycharm-snap", "pycharm-portable", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git",
                                  "cherrytree", "goodvibes", "draw.io", "qemu", "ssh", "gnome-tweaks", "gparted",
-                                 "myoffice-standard-home-edition", "snapd", "firefox"]
+                                 "myoffice-standard-home-edition", "snapd", "firefox", "inxi"]
         # elif self.os_ver == '"AstraLinuxSE" 1.6':
         elif self.os_ver in self.name_astra:
-            self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык", "qemu"]
+            self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык", "qemu", "inxi"]
 
         # print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
@@ -299,6 +299,17 @@ class Programs(QtWidgets.QDialog):
                     QtCore.QThread.msleep(150)
                     self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
                 proc_th.quit()
+            if name == "inxi":
+                proc_th = SetupInxi(action=action)
+                proc_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                proc_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                proc_th.start()
+                while proc_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                proc_th.quit()
+
 
         self.debugButtonAct()
 
@@ -986,6 +997,59 @@ class SetupVncDesktop(QtCore.QThread):
     def mv_file(self, file_destination=None):
         command = "sudo mv /tmp/trusted.tmp {}".format(file_destination)
         self.run_process(command)
+
+    def run_process(self, command):
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        line_out = True
+        while line_out:
+            line_out = process.stdout.readline()
+            self.new_log.emit(line_out.decode('utf-8', 'ignore'))
+            self.progress.emit(self.count)
+            print(line_out.decode("utf-8"), end="")
+            self.count += 1
+            sleep(0.01)
+        process.communicate()
+        self.exit_code = self.exit_code + process.returncode
+        sleep(0.2)
+
+
+# Установка программы inxi для AL16
+class SetupInxi(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, action=None):
+        super().__init__()
+        self.count = 0
+        self.exit_code = 0
+        self.action = action
+        self.deb_pack = sys.path[0] + "/files/inxi/inxi.deb"
+
+    def run(self):
+        if self.action == "install":
+            if os.path.isfile(self.deb_pack):
+                command = "sudo dpkg -i {}".format(self.deb_pack)
+                self.run_process(command)
+                if self.exit_code:
+                    text = "Ошибка при установке!"
+                    self.new_log.emit(text)
+                elif not self.exit_code:
+                    text = "Установка завершена!"
+                    self.new_log.emit(text)
+            else:
+                text = "Ошибка! Не найден deb пакет с программой!"
+                self.new_log.emit(text)
+                self.exit_code = 1
+        elif self.action == "remove":
+            command = "sudo dpkg --purge inxi"
+            self.run_process(command)
+            if self.exit_code:
+                text = "Ошибка при удалении пакета!"
+                self.new_log.emit(text)
+            elif not self.exit_code:
+                text = "Удаление программы завершено успешно!\n"
+                self.new_log.emit(text)
+        self.progress.emit(100)
 
     def run_process(self, command):
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
