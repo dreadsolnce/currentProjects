@@ -41,10 +41,11 @@ class Programs(QtWidgets.QDialog):
         if self.os_ver in self.name_debian:
             self.list_program = ["pycharm-snap", "pycharm-portable", "pyqt5-dev-tools", "timeshift", "игры", "mc", "git",
                                  "cherrytree", "goodvibes", "draw.io", "qemu", "ssh", "gnome-tweaks", "gparted",
-                                 "myoffice-standard-home-edition", "snapd", "firefox", "inxi"]
+                                 "myoffice-standard-home-edition", "snapd", "firefox", "inxi", "lnav"]
         # elif self.os_ver == '"AstraLinuxSE" 1.6':
         elif self.os_ver in self.name_astra:
-            self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык", "qemu", "inxi"]
+            self.list_program = ["timeshift", "bginfo", "vnc server 5", "vnc viewer 5", "vnc ярлык", "qemu", "inxi",
+                                 "lnav"]
 
         # print("Доступный список программ для {}: {}".format(self.os_ver, self.list_program))
 
@@ -69,6 +70,8 @@ class Programs(QtWidgets.QDialog):
         command_vnc_desktop = "ls /home/`logname`/Desktop/ | grep 'VNC*' >/dev/null; echo $?"
         # Команда для qemu
         command_qemu = "dpkg-query -L qemu-system-x86 >/dev/null; echo $?"
+        # Команда для lnav для AL
+        command_lnav = "ls /usr/local/bin | grep lnav >/dev/null; echo $?"
 
         for name in self.list_program:  # Перебираем весь список доступных программ
             if name == "игры":
@@ -87,6 +90,8 @@ class Programs(QtWidgets.QDialog):
                 command = command_vnc_desktop
             elif name == "qemu":
                 command = command_qemu
+            elif name == "lnav" and self.os_ver in self.name_astra:
+                command = command_lnav
             else:
                 command = "dpkg --list | grep " + name + " | awk '{print $2}' | grep -E ^" + name + "$ >/dev/null; echo $?"
 
@@ -309,7 +314,16 @@ class Programs(QtWidgets.QDialog):
                     QtCore.QThread.msleep(150)
                     self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
                 proc_th.quit()
-
+            if name == "lnav":
+                proc_th = SetupLnav(action=action)
+                proc_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
+                proc_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
+                proc_th.start()
+                while proc_th.isRunning():
+                    QtCore.QCoreApplication.processEvents()
+                    QtCore.QThread.msleep(150)
+                    self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
+                proc_th.quit()
 
         self.debugButtonAct()
 
@@ -1065,6 +1079,66 @@ class SetupInxi(QtCore.QThread):
         self.exit_code = self.exit_code + process.returncode
         sleep(0.2)
 
+
+# Установка программы lnav
+class SetupLnav(QtCore.QThread):
+    new_log = QtCore.pyqtSignal(str)
+    progress = QtCore.pyqtSignal(int)
+
+    def __init__(self, action=None):
+        super().__init__()
+        self.action = action
+        self.count = 0
+        self.exit_code = 0
+        self.file_path = sys.path[0] + "/files/lnav/lnav"
+
+    def run(self):
+        if self.action == "install":
+            text = "Устанавливаем программу lnav\n"
+            self.new_log.emit(text)
+            command = "sudo cp -R {} /usr/local/bin/".format(self.file_path)
+            self.run_process(command)
+            if self.exit_code == 0:
+                self.count += 1
+                self.progress.emit(self.count)
+                text = "Программа установлена успешно!\n"
+                self.new_log.emit(text)
+                sleep(1)
+            else:
+                text = "Ошибка при установке'\n"
+                self.new_log.emit(text)
+                sleep(1)
+        elif self.action == "remove":
+            text = "Удаляем программу lnav\n"
+            self.new_log.emit(text)
+            command = "sudo rm -rf /usr/local/bin/lnav"
+            self.run_process(command)
+            if self.exit_code == 0:
+                self.count += 1
+                self.progress.emit(self.count)
+                text = "Программа удалена успешно успешно!\n"
+                self.new_log.emit(text)
+                sleep(1)
+            else:
+                text = "Ошибка при удалении'\n"
+                self.new_log.emit(text)
+                sleep(1)
+        self.progress.emit(100)
+
+
+    def run_process(self, command):
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        line_out = True
+        while line_out:
+            line_out = process.stdout.readline()
+            self.new_log.emit(line_out.decode('utf-8', 'ignore'))
+            self.progress.emit(self.count)
+            print(line_out.decode("utf-8"), end="")
+            self.count += 1
+            sleep(0.01)
+        process.communicate()
+        self.exit_code = self.exit_code + process.returncode
+        sleep(0.2)
 
 # Установка программы pycharm-portable
 class SetupPycharmPortable(QtCore.QThread):
