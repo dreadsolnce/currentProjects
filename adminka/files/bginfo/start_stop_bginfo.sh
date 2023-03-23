@@ -15,6 +15,6 @@ do
   # kill $number_proc_root_tail
 
   /bin/bash /usr/local/bin/bginfo.bg
-  sleep 5
+  sleep 3600
  fi
 done
