@@ -24,6 +24,7 @@ class Bginfo_Form(object):
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
+        self.comboBox.addItem("")
         self.gridLayout.addWidget(self.comboBox, 1, 0, 1, 1)
         self.label = QtWidgets.QLabel(Form)
         self.label.setTextFormat(QtCore.Qt.AutoText)
@@ -40,5 +41,6 @@ class Bginfo_Form(object):
         self.pushButton.setText(_translate("Form", "Применить"))
         self.comboBox.setItemText(0, _translate("Form", "Богданов"))
         self.comboBox.setItemText(1, _translate("Form", "Колчин"))
+        self.comboBox.setItemText(2, _translate("Form", "Колчин №2"))
         self.label.setText(_translate("Form", "Выберите один из файлов конфигурации \n"
 " вывода информации на рабочий стол "))

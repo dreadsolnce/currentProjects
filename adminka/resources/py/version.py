@@ -3,7 +3,6 @@
 
 import subprocess
 
-
 # Функция определения версии ОС
 def OsVersion():
     command_1, command_2 = "cat /etc/lsb-release | grep DISTRIB_ID | awk -F= '{print $2}'", \

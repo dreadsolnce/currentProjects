@@ -107,10 +107,11 @@ class Programs(QtWidgets.QDialog):
     # Запуск установки либо удаления программы в зависимости от версии ОС
     def actionProg(self, os_ver=None, action=None, lst_name_prog=None):
         # if os_ver == "Ubuntu 21.04":
+        print(os_ver)
         if os_ver in self.name_debian:
             print('Запускаем функцию определения действия для Ubuntu')
             self.__actionProgUbuntu(action, lst_name_prog)
-        elif os_ver == '"AstraLinuxSE" 1.6':
+        elif os_ver == '"AstraLinuxSE" 1.6' or os_ver == '"AstraLinux" 1.7_x86-64':
             print("Запускаем функция определения действия для AstraLinux 1.6")
             self.__actionProgAstra(action, lst_name_prog)
 
@@ -244,6 +245,8 @@ class Programs(QtWidgets.QDialog):
                         conf = self.PATH_CONFIG_BGINFO + "bginfo.bpb.bg"
                     elif self.b2.conf_bg == "Колчин":
                         conf = self.PATH_CONFIG_BGINFO + "bginfo.kvl.bg"
+                    elif self.b2.conf_bg == "Колчин №2":
+                        conf = self.PATH_CONFIG_BGINFO + "bginfo.kvl2.bg"
                 proc_th = SetupBginfo(action=action, config=conf)
                 proc_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
                 proc_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
@@ -549,6 +552,9 @@ class SetupBginfo(QtCore.QThread):
                         self.exit_code = 1
                     elif not err:
                         txt = "Выполнено копирование конфигурационного файла \n"
+                        if self.config == sys.path[0] + "/files/bginfo/" + "bginfo.kvl2.bg":
+                            source_file = sys.path[0] + "/files/bginfo/" + "start_stop_bginfo.sh"
+                            out, err = runCommandReturnErr("sudo cp -R {} /usr/local/bin/".format(source_file))
                     self.count += 1
                     self.new_log.emit(str(txt))
                     self.progress.emit(self.count)
@@ -570,7 +576,11 @@ class SetupBginfo(QtCore.QThread):
                     if not self.exit_code:
                         # os.system(dist_file + "&")
                         dist_file = "/etc/xdg/autostart/bginfo.desktop"
-                        desktop_file = sys.path[0] + "/files/bginfo/bginfo.desktop"
+                        # desktop_file = None
+                        if self.config == sys.path[0] + "/files/bginfo/" + "bginfo.kvl2.bg":
+                            desktop_file = sys.path[0] + "/files/bginfo/bginfo.kvl2.desktop"
+                        else:
+                            desktop_file = sys.path[0] + "/files/bginfo/bginfo.desktop"
                         # out, err = runCommandReturnErr("sudo cp -R {} {}".format(self.config, dist_file))
                         out, err = runCommandReturnErr("sudo cp -R {} {}".format(desktop_file, dist_file))
                         if err:

@@ -54,7 +54,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.name_debian = ["Ubuntu 21.04", "Ubuntu 21.10", "Ubuntu 22.04", "Ubuntu 22.10"]  # Список поддерживаемых ОС семейства Ubuntu
-        self.name_astra = ['"AstraLinuxSE" 1.6']  # Список поддерживаемы ОС семейства AstraLinux
+        self.name_astra = ['"AstraLinuxSE" 1.6', '"AstraLinux" 1.7_x86-64']  # Список поддерживаемы ОС семейства AstraLinux
 
         self.os_ver = resources.OsVersion()  # Версия ОС
 
@@ -62,6 +62,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.msm = None  # Объект resources.MainSettingsModule
         self.csnh = None  # Объект resources.ChangeSettingsNameHost
         self.cse = None  # Объект resources.ChangeSettingsEthernet
+        self.css = None  # Обхект resources.ChangeSettingsServices
         self.pxem = None  # Объект resources.MainPxeModule
         # self.scn = resources.ScannerNetwork()
         self.scn = None
@@ -196,6 +197,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.csnh = resources.ChangeSettingsNameHost(name_ui=self.main_change_settings, obj_win=self)
         self.cse = resources.ChangeSettingsEthernet(name_ui=self.main_change_settings, obj_win=self)
+        self.css = resources.ChangeSettingsServices(name_ui=self.main_change_settings, obj_win=self)
+
 
         self.actionMenuMainChangeSettingsWindows()
 
@@ -276,8 +279,10 @@ class TimerMessageBox(QMessageBox, threading.Thread):
 def test_lib():
     list_lib = ['python3-six', 'python3-urllib3', 'python3-cffi-backend', 'python3-idna', 'python3-pkg-resources',
                 'python3-setuptools', 'python3-pyasn1', 'python3-cryptography', 'python3-paramiko', 'python3-chardet',
-                'python3-requests', 'python3-bs4', 'python-ipaddress']
+                'python3-requests', 'python3-bs4']
     os_ver = os_version()  # Версия ОС
+    if os_ver == '"AstraLinuxSE"':
+        list_lib.append('python-ipaddress')
     # Делаем общую проверку на наличие библиотек, если тест не проходит, то выполняем проверку по каждому элементу из списка
     ret = check_lib_all(list_lib)
     if ret[0] != '0':  # Проверка не пройдена, проверяем по каждому элементу (библиотеке)
@@ -289,11 +294,14 @@ def test_lib():
                     libs.append(sys.path[0] + '/files/lib/python/' + i + '*')
                 elif os_ver == "Ubuntu":
                     libs.append(i)
-        t1 = threading.Thread(target=install_lib, name='Thread1', args=(libs, os_ver,))
-        t1.start()
-        t2 = TimerMessageBox()
-        t2.exec_()
-        t1.join()
+                elif os_ver == "AstraLinuxOrel":
+                    libs.append(i)
+        if libs:
+            t1 = threading.Thread(target=install_lib, name='Thread1', args=(libs, os_ver,))
+            t1.start()
+            t2 = TimerMessageBox()
+            t2.exec_()
+            t1.join()
 
 
 # Обобщенная проверка на наличие необходимых библиотек
@@ -324,11 +332,22 @@ def install_lib(name_lib, os_ver):
     elif os_ver == '"AstraLinuxSE"':
         text_command_1 = "sudo dpkg -i "
         text_command_2 = " ; sudo apt-get install -f"
+    elif os_ver == "AstraLinuxOrel":
+        text_command_1 = "sudo apt-get install -y "
+        text_command_2 = ""
     for i in name_lib:
         command = text_command_1 + i + text_command_2
         print(text_command_1 + i)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.communicate()
+
+
+# Проверка на наличие пакета в базе пакетов
+def check_cache(name_lib):
+    command = "sudo apt-cache show " + name_lib + " >/dev/null; echo $?"
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = process.communicate()
+    return int(out.decode("utf-8"))
 
 
 def os_version():
@@ -337,6 +356,15 @@ def os_version():
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     st = proc.stdout.readline().decode("utf-8").strip()
+    # Отдельно для версии Astra Linux 1.7 Orel
+    if st == '"AstraLinux"':
+        command = "cat /etc/lsb-release | grep DISTRIB_CODENAME | awk -F= '{print $2}'"
+        proc = subprocess.Popen(command, shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        st = proc.stdout.readline().decode("utf-8").strip()
+        if st == '1.7_x86-64':
+            st = "AstraLinuxOrel"
     return st
 
 

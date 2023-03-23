@@ -3,8 +3,10 @@
 import os
 import subprocess
 import threading
+from PyQt5.Qt import QFont
 from PyQt5.QtWidgets import QMessageBox, QComboBox, QTreeWidgetItem
 from PyQt5 import QtCore
+
 
 
 def runProcessReturnErrCode(command):
@@ -162,6 +164,33 @@ class ChangeSettingsEthernet(object):
                     # if self.dictEthMac["pxe"] != elc:
                     box.addItem(elc)
                 self.name_ui.treeWidget_netmac.setItemWidget(item, 2, box)
+
+
+class ChangeSettingsServices(object):
+    def __init__(self, name_ui, obj_win):
+        super().__init__()
+        self.name_ui = name_ui
+        self.obj_win = obj_win
+        self.current_state()
+
+
+    def current_state(self):
+        self.state("ufw")
+
+
+    def state(self, name_serv=None):
+        command_state_serv = "systemctl is-enabled {}".format(name_serv)
+        if name_serv == "ufw":
+            ret_code = runProcessReturnErrCode(command_state_serv)
+            txt_state = "unknown"
+            if ret_code[2]:
+                txt_state = "Отключена"
+                color_state = "QLabel { background-color: lightgreen }"
+            elif not ret_code[2]:
+                txt_state = "Включена"
+                color_state = "QLabel { background-color: Tomato }"
+            self.name_ui.label_ufw.setText(txt_state)
+            self.name_ui.label_ufw.setStyleSheet(color_state)
 
 
 class TimerMessageBox(QMessageBox, threading.Thread):
