@@ -3,10 +3,8 @@
 import os
 import subprocess
 import threading
-from PyQt5.Qt import QFont
 from PyQt5.QtWidgets import QMessageBox, QComboBox, QTreeWidgetItem
 from PyQt5 import QtCore
-
 
 
 def runProcessReturnErrCode(command):
@@ -73,7 +71,8 @@ class ChangeSettingsNameHost(object):
                 t1.join()
                 if not self.ret_code[2]:
                     # ret_code = changeNameHosts("/etc/hosts", self.current_namehost, new_name)
-                    t1 = threading.Thread(target=self.changeNameHosts, name='Thread2', args=("/etc/hosts", self.current_namehost, new_name,))
+                    t1 = threading.Thread(target=self.changeNameHosts, name='Thread2', args=("/etc/hosts", self.current_namehost,
+                                                                                             new_name,))
                     t1.start()
                     text = "Изменяем файл /etc/hosts"
                     t2 = TimerMessageBox(text=text)
@@ -81,7 +80,7 @@ class ChangeSettingsNameHost(object):
                     t1.join()
                     if not self.ret_code[2]:
                         QMessageBox.information(self.obj_win, "Успех!", "Имя компьютера изменено успешно!")
-                        ask = QMessageBox.information(self.obj_win, "", "Перезапустить графическую сесию?",
+                        ask = QMessageBox.information(self.obj_win, "", "Перезапустить графическую сессию?",
                                                       QMessageBox.Cancel | QMessageBox.Ok, QMessageBox.Cancel)
                         if ask == QMessageBox.Ok:
                             command = "sudo systemctl restart fly-dm"
@@ -113,9 +112,10 @@ class ChangeSettingsNameHost(object):
                         if template == i:  # Один из элементов совпадает с искомым именем компьютера
                             consilience = True
                     if consilience:    # В данной строке найдено точное совпадение с искомым именем компьютера
-                        list_for_change = line.split(template)  # Получаем новый список состоящий из двух элементов, и не включающий элемент с названием искомого имени компьютера
+                        list_for_change = line.split(template)  # Получаем новый список состоящий из двух элементов,
+                        # и не включающий элемент с названием искомого имени компьютера
                         list_for_change.insert(1, new_str)
-                        line_changed = "".join(list_for_change)  # Объеденение измененного списка в строку
+                        line_changed = "".join(list_for_change)  # Объединение измененного списка в строку
                     else:
                         line_changed = line
                     ft.writelines(line_changed)
@@ -170,27 +170,82 @@ class ChangeSettingsServices(object):
     def __init__(self, name_ui, obj_win):
         super().__init__()
         self.name_ui = name_ui
+        self.txt_state = "unknown"
         self.obj_win = obj_win
+        self.ret_code = None
         self.current_state()
-
 
     def current_state(self):
         self.state("ufw")
 
-
     def state(self, name_serv=None):
+        color_state = None
         command_state_serv = "systemctl is-enabled {}".format(name_serv)
         if name_serv == "ufw":
             ret_code = runProcessReturnErrCode(command_state_serv)
-            txt_state = "unknown"
             if ret_code[2]:
-                txt_state = "Отключена"
+                self.txt_state = "Отключена"
                 color_state = "QLabel { background-color: lightgreen }"
             elif not ret_code[2]:
-                txt_state = "Включена"
+                self.txt_state = "Включена"
                 color_state = "QLabel { background-color: Tomato }"
-            self.name_ui.label_ufw.setText(txt_state)
+            self.name_ui.label_ufw.setText(self.txt_state)
             self.name_ui.label_ufw.setStyleSheet(color_state)
+
+    def clickCheckboxChangeServices(self):
+        bool_state_otm = False
+        bool_state_prim = False
+        if self.name_ui.checkBox_ufw.isChecked() and self.txt_state == "Отключена":
+            bool_state_otm = True
+            bool_state_prim = False
+        elif self.name_ui.checkBox_ufw.isChecked() and self.txt_state == "Включена":
+            bool_state_otm = False
+            bool_state_prim = True
+        elif not self.name_ui.checkBox_ufw.isChecked():
+            bool_state_otm = False
+            bool_state_prim = False
+
+        self.name_ui.pushButton_serv_otm.setEnabled(bool_state_otm)
+        self.name_ui.pushButton_serv_prim.setEnabled(bool_state_prim)
+
+    def clickPushButtonPrim(self):
+        ret_code = self.stopServices(name_serv="ufw")
+        if not ret_code:
+            QMessageBox.information(self.obj_win, "Успех!", "Служба отключена!")
+        else:
+            QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка!")
+
+        self.current_state()
+        self.clickCheckboxChangeServices()
+
+    def clickPushButtonOtm(self):
+        ret_code = self.startServices(name_serv="ufw")
+        if not ret_code:
+            QMessageBox.information(self.obj_win, "Успех!", "Служба включена!")
+        else:
+            QMessageBox.critical(self.obj_win, "Ошибка!", "Ошибка!")
+
+        self.current_state()
+        self.clickCheckboxChangeServices()
+
+    @staticmethod
+    def stopServices(name_serv=None):
+        print("Отключаем службу", name_serv)
+        command = "sudo systemctl stop {} ".format(name_serv)
+        runProcessReturnErrCode(command)
+        command = "sudo systemctl disable {} ".format(name_serv)
+        ret_code = runProcessReturnErrCode(command)
+        print(ret_code)
+        return int(ret_code[2])
+
+    @staticmethod
+    def startServices(name_serv=None):
+        print("Включаем службу", name_serv)
+        command = "sudo systemctl enable {} ".format(name_serv, name_serv)
+        ret_code = runProcessReturnErrCode(command)
+        command = "sudo systemctl start {} ".format(name_serv)
+        runProcessReturnErrCode(command)
+        return int(ret_code[2])
 
 
 class TimerMessageBox(QMessageBox, threading.Thread):

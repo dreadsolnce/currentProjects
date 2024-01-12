@@ -199,7 +199,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cse = resources.ChangeSettingsEthernet(name_ui=self.main_change_settings, obj_win=self)
         self.css = resources.ChangeSettingsServices(name_ui=self.main_change_settings, obj_win=self)
 
-
         self.actionMenuMainChangeSettingsWindows()
 
     def actionMenuMainChangeSettingsWindows(self):
@@ -208,6 +207,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_change_settings.checkBox_change.clicked.connect(self.csnh.clickCheckboxChange)
         self.main_change_settings.pushButton_namehost_cancel.clicked.connect(self.csnh.clickPushbuttonCancel)
         self.main_change_settings.pushButton_namehost_apply.clicked.connect(self.csnh.clickPushbuttonApply)
+
+        self.main_change_settings.checkBox_ufw.clicked.connect(self.css.clickCheckboxChangeServices)
+        self.main_change_settings.pushButton_serv_otm.clicked.connect(self.css.clickPushButtonOtm)
+        self.main_change_settings.pushButton_serv_prim.clicked.connect(self.css.clickPushButtonPrim)
 
         self.main_change_settings.action_MainSettings.triggered.connect(self.MenuMainSettingsWindows)
         self.main_change_settings.action_PXE.triggered.connect(self.MenuPxeWindows)
@@ -294,8 +297,8 @@ def test_lib():
                     libs.append(sys.path[0] + '/files/lib/python/' + i + '*')
                 elif os_ver == "Ubuntu":
                     libs.append(i)
-                elif os_ver == "AstraLinuxOrel":
-                    libs.append(i)
+                elif os_ver == "AstraLinux_1.7":
+                    libs.append(sys.path[0] + '/files/lib/python/al17/' + i + '*')
         if libs:
             t1 = threading.Thread(target=install_lib, name='Thread1', args=(libs, os_ver,))
             t1.start()
@@ -332,7 +335,7 @@ def install_lib(name_lib, os_ver):
     elif os_ver == '"AstraLinuxSE"':
         text_command_1 = "sudo dpkg -i "
         text_command_2 = " ; sudo apt-get install -f"
-    elif os_ver == "AstraLinuxOrel":
+    elif os_ver == "AstraLinux_1.7":
         text_command_1 = "sudo apt-get install -y "
         text_command_2 = ""
     for i in name_lib:
@@ -364,7 +367,7 @@ def os_version():
                                 stderr=subprocess.PIPE)
         st = proc.stdout.readline().decode("utf-8").strip()
         if st == '1.7_x86-64':
-            st = "AstraLinuxOrel"
+            st = "AstraLinux_1.7"
     return st
 
 

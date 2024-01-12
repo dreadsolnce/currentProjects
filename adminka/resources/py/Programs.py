@@ -113,7 +113,7 @@ class Programs(QtWidgets.QDialog):
             self.__actionProgUbuntu(action, lst_name_prog)
         elif os_ver == '"AstraLinuxSE" 1.6' or os_ver == '"AstraLinux" 1.7_x86-64':
             print("Запускаем функция определения действия для AstraLinux 1.6")
-            self.__actionProgAstra(action, lst_name_prog)
+            self.__actionProgAstra(action, lst_name_prog, os_ver)
 
     # Установка либо удаление программ Ubuntu
     def __actionProgUbuntu(self, action=None, lst_name_prog=None):
@@ -222,7 +222,7 @@ class Programs(QtWidgets.QDialog):
         self.debugButtonAct()
 
     # Установка либо удаление программ AstraLinux 1.6
-    def __actionProgAstra(self, action=None, lst_name_prog=None):
+    def __actionProgAstra(self, action=None, lst_name_prog=None, os_ver=None):
         self.dg_gui = DebugWin()
         for name in lst_name_prog:
             if name == "timeshift":
@@ -267,7 +267,7 @@ class Programs(QtWidgets.QDialog):
                     self.dg_gui.dg.textDebug.moveCursor(QtGui.QTextCursor.EndOfBlock)
                 process_th.quit()
             if name == "vnc viewer 5":
-                process_th = SetupVncViewer5(action=action)
+                process_th = SetupVncViewer5(action=action, os_ver=os_ver)
                 process_th.new_log.connect(self.dg_gui.dg.textDebug.insertPlainText)
                 process_th.progress.connect(self.dg_gui.dg.progressBar.setValue)
                 process_th.start()
@@ -816,83 +816,105 @@ class SetupVncViewer5(QtCore.QThread):
     new_log = QtCore.pyqtSignal(str)
     progress = QtCore.pyqtSignal(int)
 
-    def __init__(self, action=None):
+    def __init__(self, action=None, os_ver=None):
         super().__init__()
         self.count = 0
         self.exit_code = 0
         self.action = action
+        self.os_ver = os_ver
         self.dir_vnc_addrbook = "/usr/share/VNCAddressBook"
         self.deb_pack = sys.path[0] + "/files/vnc/vncviewer5/VNC-Viewer-5.3.3-Linux-x64.deb"
         self.tag_desk = sys.path[0] + "/files/vnc/vncviewer5/realvnc-vncaddrbook.desktop"
+        self.tar_xvnc4viewer = sys.path[0] + "/files/vnc/vncviewer5/xvnc4viewer.tar.gz"
 
     def run(self):
         if self.action == "install":
-            if os.path.isfile(self.deb_pack):
-                command = "sudo dpkg -i {}".format(self.deb_pack)
-                self.run_process(command)
-                if self.exit_code:
-                    text = "Ошибка при установке!"
-                    self.new_log.emit(text)
-                elif not self.exit_code:
-                    if not os.path.isdir(self.dir_vnc_addrbook):
-                        command = "sudo mkdir {} && sudo chmod -R 777 {}".format(self.dir_vnc_addrbook, self.dir_vnc_addrbook)
-                        self.run_process(command)
-                        if self.exit_code:
-                            text = "Ошибка создания каталога для vnc addrbook"
-                            self.new_log.emit(text)
-                    text = "Изменяем ярлык VNC Address Book\n"
-                    self.new_log.emit(text)
-                    sleep(1)
-                    if os.path.isfile(self.tag_desk):
-                        command = "sudo cp -R {} ~/.fly/startmenu/network/".format(self.tag_desk)
-                        self.run_process(command)
-                    else:
-                        text = "Ошибка! Не найден файл ярлыка!"
+            if self.os_ver == '"AstraLinuxSE" 1.6' or self.os_ver == '"AstraLinux" 1.7_x86-64':
+                if os.path.isfile(self.deb_pack):
+                    # command = "sudo dpkg -i {}".format(self.deb_pack)
+                    # self.run_process(command)
+                    self.exit_code = 0
+                    if self.exit_code:
+                        text = "Ошибка при установке!"
                         self.new_log.emit(text)
-                    text = "Изменяем настройки ОС для корректного запуска программы\n"
-                    self.new_log.emit(text)
-                    sleep(1)
-                    if not os.path.isfile("/etc/X11/trusted.bak"):
-                        command = "sudo cp /etc/X11/trusted /etc/X11/trusted.bak"
-                        self.run_process(command)
-                        if self.exit_code:
-                            text = "Ошибка создания резервной копии файла /etc/X11/trusted\n"
-                            self.new_log.emit(text)
-                    if os.path.isfile("/etc/X11/trusted.bak"):
-                        exit_code = find_string(file="/etc/X11/trusted", string="/usr/bin/vncviewer(NESTED_R)")
-                        if exit_code == 0:
-                            change_string(file="/etc/X11/trusted",
-                                          old_str="/usr/bin/vncviewer(NESTED_R)",
-                                          new_str="/usr/bin/vncviewer")
-                            if os.path.isfile("/tmp/trusted.tmp"):
-                                command = "sudo mv /tmp/trusted.tmp /etc/X11/trusted"
+                    elif not self.exit_code:
+                        # if not os.path.isdir(self.dir_vnc_addrbook):
+                        #     command = "sudo mkdir {} && sudo chmod -R 777 {}".format(self.dir_vnc_addrbook, self.dir_vnc_addrbook)
+                        #     self.run_process(command)
+                        #     if self.exit_code:
+                        #         text = "Ошибка создания каталога для vnc addrbook"
+                        #         self.new_log.emit(text)
+                        # text = "Изменяем ярлык VNC Address Book\n"
+                        # self.new_log.emit(text)
+                        # sleep(1)
+                        # if os.path.isfile(self.tag_desk):
+                        #     command = "sudo cp -R {} ~/.fly/startmenu/network/".format(self.tag_desk)
+                        #     self.run_process(command)
+                        # else:
+                        #     text = "Ошибка! Не найден файл ярлыка!"
+                        #     self.new_log.emit(text)
+                        # text = "Изменяем настройки ОС для корректного запуска программы\n"
+                        # self.new_log.emit(text)
+                        # sleep(1)
+                        # if not os.path.isfile("/etc/X11/trusted.bak"):
+                        #     command = "sudo cp /etc/X11/trusted /etc/X11/trusted.bak"
+                        #     self.run_process(command)
+                        #     if self.exit_code:
+                        #         text = "Ошибка создания резервной копии файла /etc/X11/trusted\n"
+                        #         self.new_log.emit(text)
+                        # if os.path.isfile("/etc/X11/trusted.bak"):
+                        #     exit_code = find_string(file="/etc/X11/trusted", string="/usr/bin/vncviewer(NESTED_R)")
+                        #     if exit_code == 0:
+                        #         change_string(file="/etc/X11/trusted",
+                        #                       old_str="/usr/bin/vncviewer(NESTED_R)",
+                        #                       new_str="/usr/bin/vncviewer")
+                        #         if os.path.isfile("/tmp/trusted.tmp"):
+                        #             command = "sudo mv /tmp/trusted.tmp /etc/X11/trusted"
+                        #             self.run_process(command)
+                        #             if self.exit_code:
+                        #                 text = "Ошибка копирования файла /tmp/trusted.tmp\n"
+                        #                 self.new_log.emit(text)
+                        #         else:
+                        #             text = "Ошибка применения настроек ОС!\n"
+                        #             self.new_log.emit(text)
+                        #             sleep(1)
+                        if self.os_ver == '"AstraLinux" 1.7_x86-64':
+                            print("Установка для Astra Linux 1.7")
+                            command = "tar -xvf {} -C /tmp/".format(self.tar_xvnc4viewer)
+                            print (command)
+                            self.run_process(command)
+                            if self.exit_code:
+                                text = "Ошибка распаковки архива xvnc4viewer!"
+                                self.new_log.emit(text)
+                            else:
+                                command = "sudo dpkg -i /tmp/xvnc4viewer/libfltk1* /tmp/xvnc4viewer/libfltk-* " \
+                                          "/tmp/xvnc4viewer/tigervnc* /tmp/xvnc4viewer/xvnc4viewer* && sudo dpkg --purge " \
+                                          "xvnc4viewer tigervnc-viewer libfltk-images1.3 libfltk1.3"
+                                print(command)
                                 self.run_process(command)
                                 if self.exit_code:
-                                    text = "Ошибка копирования файла /tmp/trusted.tmp\n"
+                                    text = "Ошибка при установке доп. пакетов!"
                                     self.new_log.emit(text)
-                            else:
-                                text = "Ошибка применения настроек ОС!\n"
-                                self.new_log.emit(text)
-                                sleep(1)
-                    text = "Установка завершена!"
+                        text = "Установка завершена!"
+                        self.new_log.emit(text)
+                else:
+                    text = "Ошибка! Не найден deb пакет с программой!"
                     self.new_log.emit(text)
-            else:
-                text = "Ошибка! Не найден deb пакет с программой!"
-                self.new_log.emit(text)
-                self.exit_code = 1
+                    self.exit_code = 1
         elif self.action == "remove":
-            command = "sudo dpkg --purge realvnc-vnc-viewer"
-            self.run_process(command)
-            if self.exit_code:
-                text = "Ошибка при удалении пакета!"
-                self.new_log.emit(text)
-            elif not self.exit_code:
-                text = "Удаляем следы программы\n"
-                self.new_log.emit(text)
-                sleep(1)
-                self.delete_file()
-                text = "Удаление программы завершено успешно!\n"
-                self.new_log.emit(text)
+            if self.os_ver == '"AstraLinuxSE" 1.6' or self.os_ver == '"AstraLinux" 1.7_x86-64':
+                command = "sudo dpkg --purge realvnc-vnc-viewer"
+                self.run_process(command)
+                if self.exit_code:
+                    text = "Ошибка при удалении пакета!"
+                    self.new_log.emit(text)
+                elif not self.exit_code:
+                    text = "Удаляем следы программы\n"
+                    self.new_log.emit(text)
+                    sleep(1)
+                    self.delete_file()
+                    text = "Удаление программы завершено успешно!\n"
+                    self.new_log.emit(text)
         self.progress.emit(100)
 
     def run_process(self, command):
